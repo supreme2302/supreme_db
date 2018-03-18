@@ -51,9 +51,10 @@ CREATE TABLE IF NOT EXISTS "posts" (
 
 CREATE TABLE IF NOT EXISTS "votes" (
   id SERIAL PRIMARY KEY,
-  
+
   nickname citext NOT NULL ,
   voice INTEGER NOT NULL,
   threadid INTEGER REFERENCES threads(id),
   FOREIGN KEY (nickname) REFERENCES "users" (nickname)
 );
+
