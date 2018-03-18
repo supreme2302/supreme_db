@@ -34,13 +34,29 @@ public class UserDAO {
         try {
             final String sql = "SELECT * FROM users WHERE lower(nickname) = LOWER(?)";
             return jdbc.queryForObject(sql, userMapper, nick);
-            //return jdbc.query(sql, new Object[] {nick}, userMapper);
+        }
+        catch (EmptyResultDataAccessException error) {
+            return null;
+        }
+    }
+
+    public void updateUser(User user) {
+        String sql = "UPDATE users SET fullname=?, email=?, about=? WHERE lower(nickname)=LOWER(?)";
+        jdbc.update(sql, user.getFullname(), user.getEmail(), user.getAbout(), user.getNickname());
+    }
+
+    public List<User> getExistUser(User user) {
+        try {
+            String sql = "SELECT * FROM users WHERE lower(nickname)=LOWER(?) OR lower(email)=LOWER(?)";
+            return jdbc.query(sql, new Object[] {user.getNickname(), user.getEmail()}, userMapper);
         }
         catch (EmptyResultDataAccessException error) {
             return null;
         }
 
+
     }
+
 
 
 
