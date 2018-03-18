@@ -4,7 +4,6 @@ package api.db.Controller;
 import api.db.DAO.UserDAO;
 import api.db.Models.Message;
 import api.db.Models.User;
-import org.apache.tomcat.util.http.parser.HttpParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
