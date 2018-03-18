@@ -2,8 +2,8 @@ FROM ubuntu:16.04
 
 MAINTAINER Chuvahov Egor
 
-#RUN /etc/init.d/postgresql start &&\
-RUN postgres start &&\
+#RUN postgres start &&\
+RUN /etc/init.d/postgresql start &&\
         psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
          createdb -E UTF8 -T template0 -O docker docker &&\
           /etc/init.d/postgresql stop
