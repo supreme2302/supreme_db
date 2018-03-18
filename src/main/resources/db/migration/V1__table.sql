@@ -57,4 +57,3 @@ CREATE TABLE IF NOT EXISTS "votes" (
   threadid INTEGER REFERENCES threads(id),
   FOREIGN KEY (nickname) REFERENCES "users" (nickname)
 );
-
