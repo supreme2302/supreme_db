@@ -32,8 +32,8 @@ public class ForumController {
             forumDAO.createForum(forum);
         }
         catch (DuplicateKeyException error) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("exists"));
-            //Исправить в соответсвии с тз
+            Forum exForum = forumDAO.existingForum(forum);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(exForum);
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(forum);
     }

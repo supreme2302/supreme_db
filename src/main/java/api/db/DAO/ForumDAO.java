@@ -30,6 +30,17 @@ public class ForumDAO {
         jdbc.update(sql, forum.getSlug(), forum.getTitle(), forum.getAuthor());
     }
 
+    public Forum existingForum(Forum forum) {
+        String sql = "SELECT * from forums where lower(slug) = lower(?)";
+        try{
+            return jdbc.queryForObject(sql, forumMapper, forum.getSlug());
+        }
+        catch(EmptyResultDataAccessException error) {
+            return null;
+        }
+
+    }
+
 
     private static final class ForumMapper implements RowMapper<Forum> {
         public Forum mapRow(ResultSet rs, int rowNum) throws SQLException {
