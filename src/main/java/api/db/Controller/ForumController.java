@@ -67,4 +67,14 @@ public class ForumController {
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
+    @GetMapping(path="/{slug}/details")
+    public ResponseEntity getInfoAboutForum(@PathVariable("slug")String slug) {
+        System.out.println("ahahahahahahahhahahahahahahahahahahahahahahahahaha");
+        Forum forum = forumDAO.getForumBySlug(slug);
+        if (forum == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find forum"));
+        }
+        return ResponseEntity.ok(forum);
+    }
+
 }

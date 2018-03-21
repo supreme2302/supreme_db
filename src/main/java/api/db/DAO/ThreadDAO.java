@@ -16,7 +16,7 @@ import java.sql.SQLException;
 public class ThreadDAO {
 
     private JdbcTemplate jdbc;
-    ThreadMapper threadMapper = new ThreadMapper();
+    private static ThreadMapper threadMapper = new ThreadMapper();
 
     @Autowired
     ThreadDAO(JdbcTemplate jdbc) {
@@ -28,6 +28,15 @@ public class ThreadDAO {
                 "forum, slug, votes) VALUES (?, ?, ?, ?, ?, ?, ?)";
         jdbc.update(sql, body.getAuthor(), body.getCreated(), body.getMessage(), body.getTitle(),
                 body.getForum(), body.getSlug(), body.getVotes());
+
+
+        //Возможно, для скорости следует заменить на инкремент
+        String sql_for_forums = "UPDATE forums SET threads = (" +
+                "  SELECT count(*) FROM threads" +
+                "  WHERE forum = (?)" +
+                ")" +
+                "FROM threads WHERE forums.slug = (?)";
+        jdbc.update(sql_for_forums, body.getForum(), body.getForum());
     }
 
     public Thread getThreadBySlug(String slug) {
