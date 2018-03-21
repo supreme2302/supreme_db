@@ -41,6 +41,16 @@ public class ForumDAO {
 
     }
 
+    public Forum getForumBySlug(String slug) {
+        String sql ="SELECT * FROM forums WHERE lower(slug) = lower(?)";
+        try {
+            return jdbc.queryForObject(sql, forumMapper, slug);
+        }
+        catch (EmptyResultDataAccessException error) {
+            return null;
+        }
+    }
+
 
     private static final class ForumMapper implements RowMapper<Forum> {
         public Forum mapRow(ResultSet rs, int rowNum) throws SQLException {

@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS "threads" (
   created TIMESTAMP WITH TIME ZONE,
   forum citext,
   message TEXT NOT NULL,
-  slug citext,
+  slug citext UNIQUE ,
   title TEXT NOT NULL,
   votes INTEGER,
   FOREIGN KEY (author) REFERENCES "users" (nickname),
