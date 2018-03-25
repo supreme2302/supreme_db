@@ -2,7 +2,7 @@ package api.db.DAO;
 
 
 import api.db.Models.Forum;
-import api.db.Models.User;
+import api.db.Models.Thread;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 @Service
 @Transactional
@@ -27,7 +28,7 @@ public class ForumDAO {
 
     public void createForum(Forum forum) {
         String sql = "INSERT INTO forums (slug, title, author) VALUES (?, ?, ?)";
-        jdbc.update(sql, forum.getSlug(), forum.getTitle(), forum.getAuthor());
+        jdbc.update(sql, forum.getSlug(), forum.getTitle(), forum.getUser());
     }
 
     public Forum existingForum(Forum forum) {
@@ -51,13 +52,17 @@ public class ForumDAO {
         }
     }
 
+    public List<Thread> getAllThreadsOfForum(Forum forum, Integer limit, Boolean desc, String since) {
+        return null; //TODO: todo
+    }
+
 
     private static final class ForumMapper implements RowMapper<Forum> {
         public Forum mapRow(ResultSet rs, int rowNum) throws SQLException {
             final Forum forum = new Forum();
             forum.setId(rs.getInt("id"));
             forum.setSlug(rs.getString("slug"));
-            forum.setAuthor(rs.getString("author"));
+            forum.setUser(rs.getString("author"));
             forum.setPosts(rs.getLong("posts"));
             forum.setThreads(rs.getInt("threads"));
             forum.setTitle(rs.getString("title"));

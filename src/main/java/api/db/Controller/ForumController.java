@@ -3,10 +3,10 @@ package api.db.Controller;
 import api.db.DAO.ThreadDAO;
 import api.db.DAO.UserDAO;
 import api.db.Models.Thread;
-import api.db.Models.User;
 import api.db.DAO.ForumDAO;
 import api.db.Models.Forum;
 import api.db.Models.Message;
+import api.db.Models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -29,10 +29,13 @@ public class ForumController {
     @PostMapping(path="/create")
     public ResponseEntity create(@RequestBody Forum forum) {
 
-        if (userDAO.getProfileUser(forum.getAuthor()) == null) {
+        User user;
+        user = userDAO.getProfileUser(forum.getUser());;
+        if (userDAO.getProfileUser(forum.getUser()) == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find user"));
         }
         try {
+            forum.setUser(user.getNickname());
             forumDAO.createForum(forum);
         }
         catch (DuplicateKeyException error) {
@@ -52,6 +55,7 @@ public class ForumController {
         }
         body.setForum(forum.getSlug());
         //body.setSlug(slug);
+        System.out.println(body.getAuthor());
         if (userDAO.getProfileUser(body.getAuthor()) == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find user"));
         }
@@ -63,18 +67,26 @@ public class ForumController {
 
             return ResponseEntity.status(HttpStatus.CONFLICT).body(threadDAO.getThreadBySlug(body.getSlug()));
         }
-
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     @GetMapping(path="/{slug}/details")
     public ResponseEntity getInfoAboutForum(@PathVariable("slug")String slug) {
-        System.out.println("ahahahahahahahhahahahahahahahahahahahahahahahahaha");
         Forum forum = forumDAO.getForumBySlug(slug);
         if (forum == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find forum"));
         }
         return ResponseEntity.ok(forum);
+    }
+
+    @GetMapping(path="/{slug}/threads")
+    public ResponseEntity getThreads(@PathVariable("slug")String slug,
+                                     @RequestParam(name="limit", required = false) Integer limit,
+                                     @RequestParam(name="since", required = false) String since,
+                                     @RequestParam(name="desc", required = false) Boolean desc) {
+
+        return ResponseEntity.ok(new Message("ok")); //TODO: todo
+
     }
 
 }

@@ -58,6 +58,7 @@ public class UserController {
         catch (DuplicateKeyException error) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("Can't find user"));
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+        User result = userDAO.getProfileUser(nickname);
+        return ResponseEntity.ok(result);
     }
 }

@@ -41,7 +41,10 @@ public class UserDAO {
     }
 
     public void updateUser(User user) {
-        String sql = "UPDATE users SET fullname=?, email=?, about=? WHERE lower(nickname)=LOWER(?)";
+        String sql = "UPDATE users SET " +
+                "fullname=COALESCE(?, fullname), " +
+                "email=COALESCE(?, email), " +
+                "about=COALESCE(?, about)  WHERE lower(nickname)=LOWER(?)";
         jdbc.update(sql, user.getFullname(), user.getEmail(), user.getAbout(), user.getNickname());
     }
 

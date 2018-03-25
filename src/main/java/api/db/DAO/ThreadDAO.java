@@ -3,13 +3,13 @@ package api.db.DAO;
 
 import api.db.Models.Thread;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 @Service
 @Transactional
@@ -25,9 +25,13 @@ public class ThreadDAO {
 
     public void createThread(Thread body) {
         String sql = "INSERT INTO threads (author, created, message, title, " +
-                "forum, slug, votes) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        jdbc.update(sql, body.getAuthor(), body.getCreated(), body.getMessage(), body.getTitle(),
-                body.getForum(), body.getSlug(), body.getVotes());
+                "forum, slug, votes) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id";
+//        jdbc.update(sql, body.getAuthor(), body.getCreated(), body.getMessage(), body.getTitle(),
+//                body.getForum(), body.getSlug(), body.getVotes());
+        final int id = jdbc.queryForObject(sql, new Object[] {body.getAuthor(), body.getCreated(),
+                body.getMessage(), body.getTitle(), body.getForum(), body.getSlug(), body.getVotes()} ,
+                Integer.class);
+        body.setId(id);
 
 
         //Возможно, для скорости следует заменить на инкремент
@@ -50,7 +54,7 @@ public class ThreadDAO {
         public Thread mapRow(ResultSet rs, int rowNum) throws SQLException {
             Thread thread = new Thread();
             thread.setAuthor(rs.getString("author"));
-            thread.setCreated(rs.getString("created"));
+            thread.setCreated(rs.getDate("created"));
             thread.setForum(rs.getString("forum"));
             thread.setId(rs.getInt("id"));
             thread.setMessage(rs.getString("message"));

@@ -9,7 +9,7 @@ public class Forum {
     private String slug;
     private int threads;
     private String title;
-    private String author;
+    private String user;
 
     public Forum() {}
 
@@ -19,13 +19,13 @@ public class Forum {
                  @JsonProperty("slug") String slug,
                  @JsonProperty("threads") int threads,
                  @JsonProperty("title") String title,
-                 @JsonProperty("author") String author) {
+                 @JsonProperty("user") String user) {
         this.id = id;
         this.posts = posts;
         this.slug = slug;
         this.threads = threads;
         this.title = title;
-        this.author = author;
+        this.user = user;
     }
 
     public int getId() {
@@ -61,12 +61,13 @@ public class Forum {
         this.title = title;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getUser() {
+        return user;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
+    public void setUser(String user) {
+        this.user = user;
+
     }
 
     public long getPosts() {

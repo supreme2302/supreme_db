@@ -1,14 +1,16 @@
 package api.db.Models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 public class Thread {
 
     private String author;
-    private String created;
+    //private Timestamp created;
     private String forum;
     private int id;
     private String message;
@@ -16,12 +18,15 @@ public class Thread {
     private String title;
     private int votes;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    private Date created;
+
 
     public Thread() {}
 
     @JsonCreator
     public Thread (@JsonProperty("author") String author,
-                   @JsonProperty("created") String created,
+                   @JsonProperty("created") Date created,
                    @JsonProperty("forum") String forum,
                    @JsonProperty("id") int id,
                    @JsonProperty("message") String message,
@@ -35,13 +40,14 @@ public class Thread {
         this.slug = slug;
         this.title = title;
         this.votes = votes;
-        if (created == null) {
-            //Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            //this.created = timestamp.toInstant().toString();
-            this.created = null;
-        } else {
-            this.created = created;
-        }
+        this.created = created;
+//        if (created == null) {
+//            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+//            this.created = timestamp.toInstant().toString();
+//            this.created = null;
+//        } else {
+//            this.created = created;
+//        }
     }
 
 
@@ -53,11 +59,11 @@ public class Thread {
         this.author = author;
     }
 
-    public String getCreated() {
+    public Date getCreated() {
         return created;
     }
 
-    public void setCreated(String created) {
+    public void setCreated(Date created) {
         this.created = created;
     }
 
