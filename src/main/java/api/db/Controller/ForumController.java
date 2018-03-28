@@ -8,10 +8,13 @@ import api.db.Models.Forum;
 import api.db.Models.Message;
 import api.db.Models.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -54,6 +57,7 @@ public class ForumController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find forum"));
         }
         body.setForum(forum.getSlug());
+        body.setForumid(forum.getId());
         //body.setSlug(slug);
         System.out.println(body.getAuthor());
         if (userDAO.getProfileUser(body.getAuthor()) == null) {
@@ -84,8 +88,17 @@ public class ForumController {
                                      @RequestParam(name="limit", required = false) Integer limit,
                                      @RequestParam(name="since", required = false) String since,
                                      @RequestParam(name="desc", required = false) Boolean desc) {
-
-        return ResponseEntity.ok(new Message("ok")); //TODO: todo
+        Forum forum = forumDAO.getForumBySlug(slug);
+        if (forum == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find user"));
+        }
+       // try {
+            List<Thread> forumThreads = threadDAO.getAllThreadsOfForum(forum, limit, since, desc);
+            return ResponseEntity.ok(forumThreads);
+        //}
+//        catch (DataAccessException error) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find data"));
+//        }
 
     }
 

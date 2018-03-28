@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS "threads" (
   author citext NOT NULL,
   created TIMESTAMP WITH TIME ZONE,
   forum citext,
+  forumid INTEGER,
   message TEXT NOT NULL,
   slug citext UNIQUE ,
   title TEXT NOT NULL,

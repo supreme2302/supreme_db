@@ -17,6 +17,9 @@ public class Thread {
     private String slug;
     private String title;
     private int votes;
+    private int forumid;
+
+    //TODO:: Пофиксить время!
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date created;
@@ -32,7 +35,8 @@ public class Thread {
                    @JsonProperty("message") String message,
                    @JsonProperty("slug") String slug,
                    @JsonProperty("title") String title,
-                   @JsonProperty("votes") int votes) {
+                   @JsonProperty("votes") int votes,
+                   @JsonProperty("forumid") int forumid) {
         this.author = author;
         this.forum = forum;
         this.id = id;
@@ -41,6 +45,7 @@ public class Thread {
         this.title = title;
         this.votes = votes;
         this.created = created;
+        this.forumid = forumid;
 //        if (created == null) {
 //            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 //            this.created = timestamp.toInstant().toString();
@@ -113,5 +118,13 @@ public class Thread {
 
     public void setVotes(int votes) {
         this.votes = votes;
+    }
+
+    public int getForumid() {
+        return forumid;
+    }
+
+    public void setForumid(int forumid) {
+        this.forumid = forumid;
     }
 }

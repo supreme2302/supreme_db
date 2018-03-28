@@ -1,6 +1,7 @@
 package api.db.DAO;
 
 
+import api.db.Models.Forum;
 import api.db.Models.Thread;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional
@@ -25,11 +28,11 @@ public class ThreadDAO {
 
     public void createThread(Thread body) {
         String sql = "INSERT INTO threads (author, created, message, title, " +
-                "forum, slug, votes) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                "forum, forumid, slug, votes) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
 //        jdbc.update(sql, body.getAuthor(), body.getCreated(), body.getMessage(), body.getTitle(),
 //                body.getForum(), body.getSlug(), body.getVotes());
         final int id = jdbc.queryForObject(sql, new Object[] {body.getAuthor(), body.getCreated(),
-                body.getMessage(), body.getTitle(), body.getForum(), body.getSlug(), body.getVotes()} ,
+                body.getMessage(), body.getTitle(), body.getForum(), body.getForumid(), body.getSlug(), body.getVotes()} ,
                 Integer.class);
         body.setId(id);
 
@@ -49,6 +52,33 @@ public class ThreadDAO {
     }
 
 
+    public List<Thread> getAllThreadsOfForum(Forum forum, Integer limit, String since, Boolean desc) {
+        List<Object> insertionArr = new ArrayList<>();
+        String sql = "SELECT * FROM threads WHERE forumid = (?)";
+        insertionArr.add(forum.getId());
+        if (since != null) {
+            if (desc != null && desc) {
+                sql += " AND created >= (?) ORDER BY created DESC";
+            }
+            else {
+                sql += " AND created >= (?) ORDER BY created";
+            }
+            insertionArr.add(since);
+        }
+        sql += " ORDER BY created";
+        if (desc != null && desc) {
+            sql += " DESC";
+        }
+
+        if (limit != null) {
+            sql += " LIMIT (?)";
+            insertionArr.add(limit);
+        }
+
+        return jdbc.query(sql, insertionArr.toArray(), threadMapper);
+
+    }
+
 
     private static class ThreadMapper implements RowMapper<Thread> {
         public Thread mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -61,6 +91,7 @@ public class ThreadDAO {
             thread.setSlug(rs.getString("slug"));
             thread.setTitle(rs.getString("title"));
             thread.setVotes(rs.getInt("votes"));
+            thread.setForumid(rs.getInt("forumid"));
             return thread;
         }
 

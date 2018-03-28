@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -52,9 +53,6 @@ public class ForumDAO {
         }
     }
 
-    public List<Thread> getAllThreadsOfForum(Forum forum, Integer limit, Boolean desc, String since) {
-        return null; //TODO: todo
-    }
 
 
     private static final class ForumMapper implements RowMapper<Forum> {
