@@ -19,7 +19,6 @@ public class Thread {
     private int votes;
     private int forumid;
 
-    //TODO:: Пофиксить время!
 //
 //    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
 //    private Date created;

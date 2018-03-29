@@ -33,7 +33,7 @@ public class ForumController {
     public ResponseEntity create(@RequestBody Forum forum) {
 
         User user;
-        user = userDAO.getProfileUser(forum.getUser());;
+        user = userDAO.getProfileUser(forum.getUser());
         if (userDAO.getProfileUser(forum.getUser()) == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find user"));
         }
@@ -90,16 +90,27 @@ public class ForumController {
                                      @RequestParam(name="desc", required = false) Boolean desc) {
         Forum forum = forumDAO.getForumBySlug(slug);
         if (forum == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find user"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find forum"));
         }
-       // try {
+        try {
             List<Thread> forumThreads = threadDAO.getAllThreadsOfForum(forum, limit, since, desc);
             return ResponseEntity.ok(forumThreads);
-        //}
-//        catch (DataAccessException error) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find data"));
-//        }
+        }
+        catch (DataAccessException error) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find data"));
+        }
 
+    }
+
+    @GetMapping(path="/{slug}/users")
+    public ResponseEntity getUsers(@PathVariable("slug") String slug,
+                                   @RequestParam(name="limit", required = false) Integer limit,
+                                   @RequestParam(name="since", required = false) String since,
+                                   @RequestParam(name="desc", required = false) Boolean desc) {
+        Forum forum = forumDAO.getForumBySlug(slug);
+        if (forum == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find forum"));
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 package api.db.DAO;
 
+import api.db.Models.Forum;
 import api.db.Models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -56,8 +58,34 @@ public class UserDAO {
         catch (EmptyResultDataAccessException error) {
             return null;
         }
+    }
 
+    public List<User> getUsersOfForum(User user, Integer limit, String since, Boolean desc) {
+        //TODO:Доделать
+        List<Object> insertionArr = new ArrayList<>();
+        String sql = "SELECT nickname, fullname, email, about FROM users WHERE id = (?)";
+        insertionArr.add(user.getId());
 
+        if (since != null) {
+            if (desc != null && desc) {
+                sql += " AND nickname < (?) ORDER BY nickanme DESC";
+            }
+            else {
+                sql += " AND nickname > (?) ORDER BY nickname";
+            }
+            insertionArr.add(since);
+        }
+        else {
+            sql += " ORDER BY nickname";
+            if (desc != null && desc) {
+                sql += " DESC";
+            }
+        }
+        if (limit != null) {
+            sql += " LIMIT (?)";
+            insertionArr.add(limit);
+        }
+        return jdbc.query(sql, insertionArr.toArray(), userMapper);
     }
 
 

@@ -57,25 +57,28 @@ public class ThreadDAO {
         String sql = "SELECT * FROM threads WHERE forumid = (?)";
         insertionArr.add(forum.getId());
 
-        //TODO:: переписать так как хотел
         if (since != null) {
             if (desc != null && desc) {
-                sql += " AND created <= (?)::timestamptz";
+                sql += " AND created <= (?) :: timestamptz " +
+                        "ORDER BY created DESC";
             }
             else {
-                sql += " AND created >= (?)::timestamptz";
+                sql += " AND created >= (?) :: timestamptz " +
+                        "ORDER BY created";
             }
             insertionArr.add(since);
         }
-        sql += " ORDER BY created";
-        if (desc != null && desc) {
-            sql += " DESC";
+        else {
+            sql += " ORDER BY created";
+            if (desc != null && desc) {
+                sql += " DESC";
+            }
         }
-
         if (limit != null) {
             sql += " LIMIT (?)";
-            insertionArr.add(limit);
         }
+        insertionArr.add(limit);
+
 
         return jdbc.query(sql, insertionArr.toArray(), threadMapper);
 
