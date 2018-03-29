@@ -56,12 +56,14 @@ public class ThreadDAO {
         List<Object> insertionArr = new ArrayList<>();
         String sql = "SELECT * FROM threads WHERE forumid = (?)";
         insertionArr.add(forum.getId());
+
+        //TODO:: переписать так как хотел
         if (since != null) {
             if (desc != null && desc) {
-                sql += " AND created >= (?) ORDER BY created DESC";
+                sql += " AND created <= (?)::timestamptz";
             }
             else {
-                sql += " AND created >= (?) ORDER BY created";
+                sql += " AND created >= (?)::timestamptz";
             }
             insertionArr.add(since);
         }
@@ -84,7 +86,7 @@ public class ThreadDAO {
         public Thread mapRow(ResultSet rs, int rowNum) throws SQLException {
             Thread thread = new Thread();
             thread.setAuthor(rs.getString("author"));
-            thread.setCreated(rs.getDate("created"));
+            thread.setCreated(rs.getTimestamp("created"));
             thread.setForum(rs.getString("forum"));
             thread.setId(rs.getInt("id"));
             thread.setMessage(rs.getString("message"));

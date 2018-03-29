@@ -20,16 +20,17 @@ public class Thread {
     private int forumid;
 
     //TODO:: Пофиксить время!
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-    private Date created;
-
+//
+//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+//    private Date created;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
+    private Timestamp created;
 
     public Thread() {}
 
     @JsonCreator
     public Thread (@JsonProperty("author") String author,
-                   @JsonProperty("created") Date created,
+                   @JsonProperty("created") Timestamp created,
                    @JsonProperty("forum") String forum,
                    @JsonProperty("id") int id,
                    @JsonProperty("message") String message,
@@ -64,11 +65,11 @@ public class Thread {
         this.author = author;
     }
 
-    public Date getCreated() {
+    public Timestamp getCreated() {
         return created;
     }
 
-    public void setCreated(Date created) {
+    public void setCreated(Timestamp created) {
         this.created = created;
     }
 
