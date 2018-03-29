@@ -43,10 +43,10 @@ CREATE TABLE IF NOT EXISTS "posts" (
   id SERIAL NOT NULL PRIMARY KEY,
   author TEXT NOT NULL,
   created TIMESTAMP WITH TIME ZONE,
-  forum CITEXT,
+  forum CITEXT REFERENCES forums(slug),
   isEdited BOOLEAN NOT NULL,
   message TEXT NOT NULL,
-  parent BIGINT,
+  parent BIGINT DEFAULT 0,
   thread INTEGER REFERENCES "threads" (id)
 );
 

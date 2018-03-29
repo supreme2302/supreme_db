@@ -50,6 +50,10 @@ public class ThreadDAO {
         String sql = "SELECT * FROM threads WHERE lower(slug)=lower(?)";
         return jdbc.queryForObject(sql, threadMapper, slug);
     }
+    public Thread getThreadById(Integer id) {
+        String sql = "SELECT * FROM threads WHERE id = (?)";
+        return jdbc.queryForObject(sql, threadMapper, id);
+    }
 
 
     public List<Thread> getAllThreadsOfForum(Forum forum, Integer limit, String since, Boolean desc) {
