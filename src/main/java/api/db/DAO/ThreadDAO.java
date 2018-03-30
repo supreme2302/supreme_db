@@ -3,8 +3,10 @@ package api.db.DAO;
 
 import api.db.Models.Forum;
 import api.db.Models.Thread;
+import api.db.Models.Vote;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -85,6 +87,41 @@ public class ThreadDAO {
 
 
         return jdbc.query(sql, insertionArr.toArray(), threadMapper);
+
+    }
+
+    public void createVote(Vote vote) {
+        String sql = "INSERT INTO votes (nickname, voice, threadid) VALUES (?, ?, ?) RETURNING id";
+        vote.setId(jdbc.queryForObject(sql, new Object[] {vote.getNickname(), vote.getVoice(),
+        vote.getThreadid()}, Integer.class));
+
+        String update_sql = "UPDATE threads SET votes = COALESCE((" +
+                "SELECT sum(voice) FROM votes WHERE threadid = (?)), votes) WHERE id=(?)";
+        jdbc.update(update_sql, vote.getThreadid(), vote.getThreadid());
+
+    }
+
+    public void updateVote(Vote vote) {
+        String sql = "UPDATE votes SET voice = COALESCE(?, voice) WHERE id = (?)";
+        jdbc.update(sql, vote.getVoice(), vote.getId());
+    }
+
+    public Vote getVoteByNick(String nickname) {
+        String sql = "SELECT * FROM votes WHERE lower(nickname) = lower(?)";
+        try {
+            return jdbc.queryForObject(sql, new RowMapper<Vote>() {
+                @Override
+                public Vote mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return new Vote(resultSet.getInt("id"),
+                            resultSet.getString("nickname"),
+                            resultSet.getInt("voice"),
+                            resultSet.getInt("threadid"));
+                }
+            }, nickname);
+        }
+        catch (EmptyResultDataAccessException error) {
+            return null;
+        }
 
     }
 

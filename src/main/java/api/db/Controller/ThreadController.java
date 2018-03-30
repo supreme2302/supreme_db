@@ -4,14 +4,12 @@ import api.db.DAO.ForumDAO;
 import api.db.DAO.PostDAO;
 import api.db.DAO.ThreadDAO;
 import api.db.DAO.UserDAO;
-import api.db.Models.Forum;
-import api.db.Models.Message;
-import api.db.Models.Post;
+import api.db.Models.*;
 import api.db.Models.Thread;
-import api.db.Models.User;
 import javafx.geometry.Pos;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -66,6 +64,30 @@ public class ThreadController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(posts);
 
+    }
+
+    @PostMapping(path="/{slug_or_id}/vote")
+    public ResponseEntity Vote(@PathVariable("slug_or_id") String slug,
+                               @RequestBody Vote vote) {
+        Thread thread;
+        thread = CheckSlugOrId(slug);
+        User user = userDAO.getProfileUser(vote.getNickname());
+        if (thread == null || user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new Message("Cannot find thread or user"));
+        }
+        Vote existVote = threadDAO.getVoteByNick(vote.getNickname());
+        if (existVote == null) {
+            vote.setThreadid(thread.getId());
+            threadDAO.createVote(vote);
+        }
+        else {
+            threadDAO.updateVote(vote);
+        }
+
+        thread = CheckSlugOrId(slug);
+
+        return ResponseEntity.ok(thread);
     }
 
 }
