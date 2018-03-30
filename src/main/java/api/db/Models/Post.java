@@ -3,7 +3,6 @@ package api.db.Models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javafx.geometry.Pos;
 
 import java.sql.Timestamp;
 
@@ -13,9 +12,9 @@ public class Post {
     private String forum;
     private String message;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
-    private Timestamp created;
-    private Boolean isEdited;
+    //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
+    private String created;
+    private Boolean isedited;
     private Long parent;
     private Long thread;
 
@@ -27,17 +26,23 @@ public class Post {
                 @JsonProperty("forum") String forum,
                 @JsonProperty("message") String message,
                 @JsonProperty("created") Timestamp created,
-                @JsonProperty("isEdited") Boolean isEdited,
+                @JsonProperty("isedited") Boolean isedited,
                 @JsonProperty("parent") Long parent,
                 @JsonProperty("thread") Long thread) {
         this.id = id;
         this.author = author;
         this.forum = forum;
         this.message = message;
-        this.created = created;
-        this.isEdited = isEdited;
+        this.isedited = isedited;
         this.parent = parent;
         this.thread = thread;
+
+        if (created == null) {
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            this.created = timestamp.toInstant().toString();
+        } else {
+            this.created = created.toInstant().toString();
+        }
     }
 
     public Long getId() {
@@ -72,20 +77,20 @@ public class Post {
         this.message = message;
     }
 
-    public Timestamp getCreated() {
+    public String getCreated() {
         return created;
     }
 
-    public void setCreated(Timestamp created) {
+    public void setCreated(String created) {
         this.created = created;
     }
 
     public Boolean getEdited() {
-        return isEdited;
+        return isedited;
     }
 
     public void setEdited(Boolean edited) {
-        isEdited = edited;
+        isedited = edited;
     }
 
     public Long getParent() {

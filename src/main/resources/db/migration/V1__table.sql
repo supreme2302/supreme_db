@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS "posts" (
   author TEXT NOT NULL,
   created TIMESTAMP WITH TIME ZONE,
   forum CITEXT REFERENCES forums(slug),
-  isEdited BOOLEAN NOT NULL,
+  isEdited BOOLEAN,
   message TEXT NOT NULL,
   parent BIGINT DEFAULT 0,
   thread INTEGER REFERENCES "threads" (id)

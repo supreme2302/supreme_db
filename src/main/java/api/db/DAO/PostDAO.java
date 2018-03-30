@@ -30,7 +30,7 @@ public class PostDAO {
     private static PostMapper postMapper = new PostMapper();
 
     public Integer createPost (List<Post> posts, Thread thread) {
-
+        //TODO:: ВРЕМЯ
 //        List<Integer> resId = new ArrayList<>();
 //        List<Post> res = new ArrayList<>();
        // try {
@@ -38,6 +38,7 @@ public class PostDAO {
                 post.setForum(thread.getForum());
                 post.setThread((long) thread.getId());
                 post.setCreated(posts.get(0).getCreated());
+                System.out.println("ttt  " + posts.get(0));
                 post.setForum(thread.getForum());
 
                 System.out.println("AAA  -  " + post.getParent());
@@ -51,10 +52,13 @@ public class PostDAO {
 //                }
                 System.out.println("BBB");
 
-                String sql = "INSERT INTO posts (author, message, parent) " +
-                        "VALUES (?, ?, ?) RETURNING id";
+                String sql = "INSERT INTO posts (author, message, parent, created) " +
+                        "VALUES (?, ?, ?, ?::timestamptz) RETURNING id";
 
-                Integer id = jdbc.update(sql, post.getAuthor(), post.getMessage(), post.getParent(), postMapper);
+
+                Integer id = jdbc.queryForObject(sql, new Object[] {post.getAuthor(),
+                        post.getMessage(), post.getParent(), post.getCreated()},
+                        Integer.class);
                 post.setId((long)id);
             }
             return 201;
@@ -84,7 +88,7 @@ public class PostDAO {
         public Post mapRow(ResultSet rs, int rowNum) throws SQLException {
             Post post = new Post();
             post.setAuthor(rs.getString("author"));
-            post.setCreated(rs.getTimestamp("created"));
+            post.setCreated(rs.getString("created"));
             post.setEdited(rs.getBoolean("isedited"));
             post.setForum(rs.getString("forum"));
             post.setId(rs.getLong("id"));
