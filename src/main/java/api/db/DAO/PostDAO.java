@@ -10,8 +10,10 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.StyledEditorKit;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +32,7 @@ public class PostDAO {
     private static PostMapper postMapper = new PostMapper();
 
     public Integer createPost (List<Post> posts, Thread thread) {
-        //TODO:: ВРЕМЯ
+        //TODO:: фиксить
 //        List<Integer> resId = new ArrayList<>();
 //        List<Post> res = new ArrayList<>();
        // try {
@@ -38,26 +40,27 @@ public class PostDAO {
                 post.setForum(thread.getForum());
                 post.setThread((long) thread.getId());
                 post.setCreated(posts.get(0).getCreated());
-                System.out.println("ttt  " + posts.get(0));
+
                 post.setForum(thread.getForum());
 
-                System.out.println("AAA  -  " + post.getParent());
+
                 Post buff = getPostById(post.getParent());
 
-                System.out.println("AAA  -  " + buff);
+
 //                if ((buff == null && post.getParent() != 0) ||
 //                        (buff != null &&
 //                        !buff.getThread().equals(post.getThread()))) {
 //                    return 409;
 //                }
-                System.out.println("BBB");
 
-                String sql = "INSERT INTO posts (author, message, parent, created) " +
-                        "VALUES (?, ?, ?, ?::timestamptz) RETURNING id";
+
+                String sql = "INSERT INTO posts (author, message, parent, created, thread, forum) " +
+                        "VALUES (?, ?, ?, ?::timestamptz, ?, ?) RETURNING id";
 
 
                 Integer id = jdbc.queryForObject(sql, new Object[] {post.getAuthor(),
-                        post.getMessage(), post.getParent(), post.getCreated()},
+                        post.getMessage(), post.getParent(), post.getCreated(),
+                                thread.getId(), thread.getForum()},
                         Integer.class);
                 post.setId((long)id);
             }
@@ -79,6 +82,30 @@ public class PostDAO {
 
     }
 
+    public List<Post> getPostsOfThread(Thread thread, Integer limit, String since,
+                                       String sort, Boolean desc) {
+        List<Object> insertionArr = new ArrayList<>();
+        if (sort.equals("flat")) {
+            String sql = "SELECT * FROM posts WHERE thread = (?)";
+            insertionArr.add(thread.getId());
+
+            if (since != null) {
+                sql += " AND id > (?)";
+                insertionArr.add(since);
+            }
+            sql += " ORDER BY created::timestamptz";
+            if (desc != null && desc) {
+                sql += " DESC";
+            }
+            if (limit != null) {
+                sql += " LIMIT (?)";
+                insertionArr.add(limit);
+            }
+            return jdbc.query(sql, insertionArr.toArray(), postMapper);
+        }
+        return null;
+    }
+
 
 
 
@@ -86,16 +113,15 @@ public class PostDAO {
 
     private static final class PostMapper implements RowMapper<Post> {
         public Post mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Post post = new Post();
-            post.setAuthor(rs.getString("author"));
-            post.setCreated(rs.getString("created"));
-            post.setEdited(rs.getBoolean("isedited"));
-            post.setForum(rs.getString("forum"));
-            post.setId(rs.getLong("id"));
-            post.setMessage(rs.getString("message"));
-            post.setParent(rs.getLong("parent"));
-            post.setThread(rs.getLong("thread"));
-            return post;
+            String author = rs.getString("author");
+            Timestamp created = rs.getTimestamp("created");
+            Boolean isEdited = rs.getBoolean("isedited");
+            String forum = rs.getString("forum");
+            Long id = rs.getLong("id");
+            String message = rs.getString("message");
+            Long parent = rs.getLong("parent");
+            Long thread = rs.getLong("thread");
+            return new Post(id, author, forum, message, created, isEdited, parent, thread);
         }
     }
 }

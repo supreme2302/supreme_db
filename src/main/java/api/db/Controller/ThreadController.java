@@ -105,4 +105,23 @@ public class ThreadController {
         return ResponseEntity.ok(thread);
     }
 
+    @GetMapping(path="/{slug_or_id}/posts")
+    public ResponseEntity getPosts(@PathVariable("slug_or_id") String slug_or_id,
+                                   @RequestParam(name = "limit", required = false) Integer limit,
+                                   @RequestParam(name = "since", required = false) String since,
+                                   @RequestParam(name = "sort", required = false) String sort,
+                                   @RequestParam(name = "desc", required = false) Boolean desc) {
+
+        Thread thread;
+
+        thread = CheckSlugOrId(slug_or_id);
+        System.out.println(thread.getId());
+        if (thread == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find thread"));
+        }
+
+        List<Post> postListOfThread = postDAO.getPostsOfThread(thread, limit, since, sort, desc);
+        return ResponseEntity.ok(postListOfThread);
+    }
+
 }

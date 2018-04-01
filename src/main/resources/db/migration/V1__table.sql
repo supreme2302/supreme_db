@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS "posts" (
   id SERIAL NOT NULL PRIMARY KEY,
   author TEXT NOT NULL,
   created TIMESTAMP WITH TIME ZONE,
-  forum CITEXT REFERENCES forums(slug),
+  forum CITEXT REFERENCES "forums" (slug),
   isEdited BOOLEAN,
   message TEXT NOT NULL,
   parent BIGINT DEFAULT 0,
@@ -55,6 +55,6 @@ CREATE TABLE IF NOT EXISTS "votes" (
 
   nickname citext NOT NULL ,
   voice INTEGER NOT NULL,
-  threadid INTEGER REFERENCES threads(id),
+  threadid INTEGER REFERENCES "threads" (id),
   FOREIGN KEY (nickname) REFERENCES "users" (nickname)
 );

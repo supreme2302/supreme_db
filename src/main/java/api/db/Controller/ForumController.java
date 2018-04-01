@@ -59,7 +59,7 @@ public class ForumController {
         body.setForum(forum.getSlug());
         body.setForumid(forum.getId());
         //body.setSlug(slug);
-        System.out.println(body.getAuthor());
+
         if (userDAO.getProfileUser(body.getAuthor()) == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find user"));
         }
