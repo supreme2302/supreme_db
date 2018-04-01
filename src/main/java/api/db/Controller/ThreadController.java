@@ -66,6 +66,14 @@ public class ThreadController {
 
     }
 
+    @GetMapping(path="/{slug_or_id}/details")
+    public ResponseEntity getDetails(@PathVariable("slug_or_id") String slug_or_id) {
+        if (CheckSlugOrId(slug_or_id) == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find thread"));
+        }
+        return ResponseEntity.ok(CheckSlugOrId(slug_or_id));
+    }
+
     @PostMapping(path="/{slug_or_id}/vote")
     public ResponseEntity Vote(@PathVariable("slug_or_id") String slug,
                                @RequestBody Vote vote) {
