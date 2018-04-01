@@ -95,16 +95,19 @@ public class ThreadDAO {
         vote.setId(jdbc.queryForObject(sql, new Object[] {vote.getNickname(), vote.getVoice(),
         vote.getThreadid()}, Integer.class));
 
-        String update_sql = "UPDATE threads SET votes = COALESCE((" +
-                "SELECT sum(voice) FROM votes WHERE threadid = (?)), votes) WHERE id=(?)";
-        jdbc.update(update_sql, vote.getThreadid(), vote.getThreadid());
+        String update_sql = "UPDATE threads SET votes = votes + ? WHERE id=(?)";
+        jdbc.update(update_sql, vote.getVoice(), vote.getThreadid());
 
     }
 
-    public void updateVote(Vote vote) {
-        String sql = "UPDATE votes SET voice = COALESCE(?, voice) WHERE id = (?)";
-        jdbc.update(sql, vote.getVoice(), vote.getId());
+    public void updateVote(Vote vote, Vote existVote, int newVote) {
+        String sql = "UPDATE votes SET voice = ? WHERE id = (?)";
+        String update_sql = "UPDATE threads SET votes = votes + ? WHERE id=(?)";
+
+        jdbc.update(sql, vote.getVoice(), existVote.getId());
+        jdbc.update(update_sql, newVote, existVote.getThreadid());
     }
+
 
     public Vote getVoteByNick(String nickname) {
         String sql = "SELECT * FROM votes WHERE lower(nickname) = lower(?)";

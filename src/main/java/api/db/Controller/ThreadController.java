@@ -82,7 +82,14 @@ public class ThreadController {
             threadDAO.createVote(vote);
         }
         else {
-            threadDAO.updateVote(vote);
+            int newVote = 0;
+            if (existVote.getVoice() > 0 && vote.getVoice() < 0) {
+                newVote = -2;
+            }
+            else if (existVote.getVoice() < 0 && vote.getVoice() > 0) {
+                newVote = 2;
+            }
+            threadDAO.updateVote(vote, existVote, newVote);
         }
 
         thread = CheckSlugOrId(slug);
