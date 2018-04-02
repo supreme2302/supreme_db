@@ -82,10 +82,10 @@ public class PostDAO {
 
     }
 
-    public List<Post> getPostsOfThread(Thread thread, Integer limit, String since,
+    public List<Post> getPostsOfThread(Thread thread, Integer limit, Integer since,
                                        String sort, Boolean desc) {
-        List<Object> insertionArr = new ArrayList<>();
         if (sort.equals("flat")) {
+            List<Object> insertionArr = new ArrayList<>();
             String sql = "SELECT * FROM posts WHERE thread = (?)";
             insertionArr.add(thread.getId());
 
@@ -93,7 +93,8 @@ public class PostDAO {
                 sql += " AND id > (?)";
                 insertionArr.add(since);
             }
-            sql += " ORDER BY created::timestamptz";
+//            sql += (sort.equals("flat")) ? " ORDER BY created" : " ORDER BY parent, created";
+            sql += " ORDER BY created";
             if (desc != null && desc) {
                 sql += " DESC";
             }
