@@ -119,8 +119,17 @@ public class ThreadController {
         if (thread == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find thread"));
         }
+        List<Post> postListOfThread;
+        if (sort.equals("flat")) {
+            postListOfThread = postDAO.getPostsOfThreadByFlat(thread, limit, since, desc);
+        }
+        else if (sort.equals("tree")) {
+            postListOfThread = postDAO.getPostsOfThreadByTree(thread, limit, since, desc);
+        }
+        else {
+            postListOfThread = postDAO.getPostsOfThreadByFlat(thread, limit, since, desc);
+        }
 
-        List<Post> postListOfThread = postDAO.getPostsOfThread(thread, limit, since, sort, desc);
         return ResponseEntity.ok(postListOfThread);
     }
 

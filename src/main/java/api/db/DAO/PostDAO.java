@@ -3,6 +3,7 @@ package api.db.DAO;
 
 import api.db.Models.Post;
 import api.db.Models.Thread;
+import javafx.geometry.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,10 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.swing.text.StyledEditorKit;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,26 +32,20 @@ public class PostDAO {
     private static PostMapper postMapper = new PostMapper();
 
     public Integer createPost (List<Post> posts, Thread thread) {
-        //TODO:: фиксить
-//        List<Integer> resId = new ArrayList<>();
-//        List<Post> res = new ArrayList<>();
-       // try {
+
+
             for (Post post : posts) {
                 post.setForum(thread.getForum());
                 post.setThread((long) thread.getId());
                 post.setCreated(posts.get(0).getCreated());
 
-                post.setForum(thread.getForum());
+                Post parentPost = getPostById(post.getParent());
 
 
-                Post buff = getPostById(post.getParent());
-
-
-//                if ((buff == null && post.getParent() != 0) ||
-//                        (buff != null &&
-//                        !buff.getThread().equals(post.getThread()))) {
-//                    return 409;
-//                }
+                if (parentPost == null && post.getParent() != 0 ||
+                        (parentPost != null && !parentPost.getThread().equals(post.getThread()))) {
+                    return 409;
+                }
 
 
                 String sql = "INSERT INTO posts (author, message, parent, created, thread, forum) " +
@@ -63,12 +57,44 @@ public class PostDAO {
                                 thread.getId(), thread.getForum()},
                         Integer.class);
                 post.setId((long)id);
+                setPathOfPost(parentPost, post);
             }
             return 201;
         //}
 //        catch (Exception error) {
 //            return 404;
 //        }
+    }
+
+    public void setPathOfPost(Post chuf, Post body) {
+
+        jdbc.update(con -> {
+            PreparedStatement pst = con.prepareStatement(
+                    "update posts set" +
+                            "  path = ? " +
+                            "where id = ?");
+            if (body.getParent() == 0) {
+                pst.setArray(1, con.createArrayOf("INT", new Object[]{body.getId()}));//String.valueOf(body.getId()));
+            } else {
+                ArrayList arr = new ArrayList<Object>(Arrays.asList(chuf.getPath()));
+                arr.add(body.getId());
+                pst.setArray(1, con.createArrayOf("INT", arr.toArray()));//chuf.getPath() + "-" + String.valueOf(body.getId()));
+            }
+            pst.setLong(2, body.getId());
+            return pst;
+        });
+//        String sql = "UPDATE posts SET path = (?) WHERE id = (?)";
+//
+//        ArrayList arr;
+//
+//        if (cur.getParent() == 0) {
+//            arr = new ArrayList<Object>(Arrays.asList(cur.getId()));
+//        }
+//        else {
+//            arr = new ArrayList<Object>(Arrays.asList(parent.getPath()));
+//            arr.add(cur.getId());
+//        }
+//        jdbc.update(sql, arr.toArray(), cur.getId());
     }
 
     public Post getPostById (Long id) {
@@ -79,13 +105,13 @@ public class PostDAO {
         catch (DataAccessException error) {
             return null;
         }
-
     }
 
-    public List<Post> getPostsOfThread(Thread thread, Integer limit, Integer since,
-                                       String sort, Boolean desc) {
-        if (sort.equals("flat")) {
-            List<Object> insertionArr = new ArrayList<>();
+
+    public List<Post> getPostsOfThreadByFlat(Thread thread, Integer limit, Integer since,
+                                        Boolean desc) {
+        List<Object> insertionArr = new ArrayList<>();
+
             String sql = "SELECT * FROM posts WHERE thread = (?)";
             insertionArr.add(thread.getId());
 
@@ -93,18 +119,50 @@ public class PostDAO {
                 sql += " AND id > (?)";
                 insertionArr.add(since);
             }
-//            sql += (sort.equals("flat")) ? " ORDER BY created" : " ORDER BY parent, created";
-            sql += " ORDER BY created";
+            sql += " ORDER BY created::timestamptz";
+
             if (desc != null && desc) {
-                sql += " DESC";
+                sql += " DESC, id DESC";
+            }
+            else {
+                sql += " , id ";
             }
             if (limit != null) {
                 sql += " LIMIT (?)";
                 insertionArr.add(limit);
             }
             return jdbc.query(sql, insertionArr.toArray(), postMapper);
-        }
-        return null;
+
+
+
+    }
+    public List<Post> getPostsOfThreadByTree(Thread thread, Integer limit, Integer since,
+                                             Boolean desc) {
+        List<Object> insertionArr = new ArrayList<>();
+        String sql = "SELECT * FROM posts WHERE thread = (?)";
+        insertionArr.add(thread.getId());
+
+            if (since != null) {
+                if (desc) {
+                    sql += " AND path < (SELECT path from posts WHERE id = (?))";
+                }
+                else {
+                    sql += " AND path > (SELECT path from posts WHERE id = (?))";
+                }
+                insertionArr.add(since);
+            }
+
+            sql += " ORDER BY path";
+
+            if (desc != null && desc) {
+                sql += " DESC, id DESC ";
+            }
+            sql += ", created::timestamptz, id";
+            if (limit != null) {
+                sql += " LIMIT (?)";
+                insertionArr.add(limit);
+            }
+            return jdbc.query(sql, insertionArr.toArray(), postMapper);
     }
 
 
@@ -122,7 +180,9 @@ public class PostDAO {
             String message = rs.getString("message");
             Long parent = rs.getLong("parent");
             Long thread = rs.getLong("thread");
-            return new Post(id, author, forum, message, created, isEdited, parent, thread);
+            Array path = rs.getArray("path");
+            return new Post(id, author, forum, message, created, isEdited,
+                    parent, thread, (Object[])path.getArray());
         }
     }
 }

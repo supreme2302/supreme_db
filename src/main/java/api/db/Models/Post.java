@@ -17,6 +17,7 @@ public class Post {
     private Boolean isedited;
     private Long parent;
     private Long thread;
+    private Object[] path;
 
     public Post() {}
 
@@ -28,13 +29,21 @@ public class Post {
                 @JsonProperty("created") Timestamp created,
                 @JsonProperty("isedited") Boolean isedited,
                 @JsonProperty("parent") Long parent,
-                @JsonProperty("thread") Long thread) {
+                @JsonProperty("thread") Long thread,
+                @JsonProperty("path") Object[] path) {
         this.id = id;
         this.author = author;
         this.forum = forum;
         this.message = message;
         this.isedited = isedited;
-        this.parent = parent;
+        this.path = path;
+        if (parent == null) {
+            this.parent = (long)0;
+        }
+        else {
+            this.parent = parent;
+        }
+
         this.thread = thread;
 
         if (created == null) {
@@ -107,5 +116,13 @@ public class Post {
 
     public void setThread(Long thread) {
         this.thread = thread;
+    }
+
+    public Object[] getPath() {
+        return path;
+    }
+
+    public void setPath(Object[] path) {
+        this.path = path;
     }
 }
