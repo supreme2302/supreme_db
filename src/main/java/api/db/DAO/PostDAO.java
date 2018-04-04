@@ -96,6 +96,7 @@ public class PostDAO {
 
     public List<Post> getPostsOfThreadByFlat(Thread thread, Integer limit, Integer since,
                                              Boolean desc) {
+        //TODO: like parent
         List<Object> insertionArr = new ArrayList<>();
         desc = (desc != null) && desc;
         String sql = "SELECT * FROM posts WHERE thread = (?)";
@@ -126,6 +127,7 @@ public class PostDAO {
     }
     public List<Post> getPostsOfThreadByTree(Thread thread, Integer limit, Integer since,
                                              Boolean desc) {
+        //TODO: like parent
         List<Object> insertionArr = new ArrayList<>();
         desc = (desc != null) && desc;
         String sql = "SELECT * FROM posts WHERE thread = (?)";
@@ -157,6 +159,7 @@ public class PostDAO {
                                          Boolean desc) {
         List<Object> insertionArr = new ArrayList<>();
 
+        //TODO:: подумать и упростить
         String sql = "SELECT * FROM posts ";
         desc = (desc != null) && desc;
         if (since == null) {
