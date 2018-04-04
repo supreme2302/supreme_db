@@ -113,6 +113,9 @@ public class ThreadController {
                                    @RequestParam(name = "desc", required = false) Boolean desc) {
 
         Thread thread;
+        if (sort == null) {
+            sort = "flat";
+        }
 
         thread = CheckSlugOrId(slug_or_id);
         System.out.println(thread.getId());
