@@ -58,6 +58,9 @@ public class PostDAO {
                         Integer.class);
                 post.setId((long)id);
                 setPathOfPost(parentPost, post);
+
+                String updateForumSql = "UPDATE forums SET posts = posts + 1 WHERE slug = ?";
+                jdbc.update(updateForumSql, post.getForum());
             }
             return 201;
     }

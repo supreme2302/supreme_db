@@ -74,6 +74,21 @@ public class ThreadController {
         return ResponseEntity.ok(CheckSlugOrId(slug_or_id));
     }
 
+    @PostMapping(path="/{slug_or_id}/details")
+    public ResponseEntity changeThread(@PathVariable("slug_or_id") String slug_or_id,
+                                       @RequestBody Thread body) {
+        Thread thread = CheckSlugOrId(slug_or_id);
+        if (thread == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find thread"));
+        }
+        thread.setMessage(body.getMessage());
+        thread.setTitle(body.getTitle());
+        threadDAO.changeThread(thread);
+        Thread result = CheckSlugOrId(slug_or_id);
+        return ResponseEntity.ok(result);
+
+    }
+
     @PostMapping(path="/{slug_or_id}/vote")
     public ResponseEntity Vote(@PathVariable("slug_or_id") String slug,
                                @RequestBody Vote vote) {
@@ -118,7 +133,6 @@ public class ThreadController {
         }
 
         thread = CheckSlugOrId(slug_or_id);
-        System.out.println(thread.getId());
         if (thread == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find thread"));
         }

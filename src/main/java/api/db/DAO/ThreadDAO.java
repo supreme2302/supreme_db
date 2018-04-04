@@ -57,6 +57,11 @@ public class ThreadDAO {
         return jdbc.queryForObject(sql, threadMapper, id);
     }
 
+    public void changeThread(Thread thread) {
+        String sql = "UPDATE threads SET message = ?, title = ? WHERE id = ?";
+        jdbc.update(sql, thread.getMessage(), thread.getTitle(), thread.getId());
+    }
+
 
     public List<Thread> getAllThreadsOfForum(Forum forum, Integer limit, String since, Boolean desc) {
         List<Object> insertionArr = new ArrayList<>();
