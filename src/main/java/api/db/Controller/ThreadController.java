@@ -127,7 +127,7 @@ public class ThreadController {
             postListOfThread = postDAO.getPostsOfThreadByTree(thread, limit, since, desc);
         }
         else {
-            postListOfThread = postDAO.getPostsOfThreadByFlat(thread, limit, since, desc);
+            postListOfThread = postDAO.getPostsOfThreadByParent(thread, limit, since, desc);
         }
 
         return ResponseEntity.ok(postListOfThread);
