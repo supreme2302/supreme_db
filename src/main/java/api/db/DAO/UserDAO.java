@@ -60,32 +60,21 @@ public class UserDAO {
         }
     }
 
-    public List<User> getUsersOfForum(User user, Integer limit, String since, Boolean desc) {
+    public List<User> getUsersOfForum(Forum forum, Integer limit, String since, Boolean desc) {
         //TODO:Доделать
         List<Object> insertionArr = new ArrayList<>();
-        String sql = "SELECT nickname, fullname, email, about FROM users WHERE id = (?)";
-        insertionArr.add(user.getId());
-
-        if (since != null) {
-            if (desc != null && desc) {
-                sql += " AND nickname < (?) ORDER BY nickanme DESC";
-            }
-            else {
-                sql += " AND nickname > (?) ORDER BY nickname";
-            }
-            insertionArr.add(since);
-        }
-        else {
-            sql += " ORDER BY nickname";
-            if (desc != null && desc) {
-                sql += " DESC";
-            }
-        }
-        if (limit != null) {
-            sql += " LIMIT (?)";
-            insertionArr.add(limit);
-        }
-        return jdbc.query(sql, insertionArr.toArray(), userMapper);
+        String sql = "SELECT about, fullname, email, nickname FROM users AS u" +
+                " JOIN threads AS t " +
+                " ON u.nickname = t.author " +
+                " JOIN forums AS f ON f.id = ? " +
+                " UNION " +
+                " SELECT about, fullname, email, nickname FROM users AS u " +
+                " JOIN posts AS p " +
+                " ON u.nickname = p.author " +
+                " JOIN forums AS f " +
+                " ON f.id = ?";
+        insertionArr.add(forum.getId());
+        return jdbc.query(sql, new Object[] {forum.getId(), forum.getId()}, userMapper);
     }
 
 

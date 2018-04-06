@@ -104,15 +104,17 @@ public class ForumController {
 
 
     //TODO::todo
-//    @GetMapping(path="/{slug}/users")
-//    public ResponseEntity getUsers(@PathVariable("slug") String slug,
-//                                   @RequestParam(name="limit", required = false) Integer limit,
-//                                   @RequestParam(name="since", required = false) String since,
-//                                   @RequestParam(name="desc", required = false) Boolean desc) {
-//        Forum forum = forumDAO.getForumBySlug(slug);
-//        if (forum == null) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find forum"));
-//        }
-//    }
+    @GetMapping(path="/{slug}/users")
+    public ResponseEntity getUsers(@PathVariable("slug") String slug,
+                                   @RequestParam(name="limit", required = false) Integer limit,
+                                   @RequestParam(name="since", required = false) String since,
+                                   @RequestParam(name="desc", required = false) Boolean desc) {
+        Forum forum = forumDAO.getForumBySlug(slug);
+        System.out.println(forum.getId() + " asdsadaa");
+        if (forum == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find forum"));
+        }
+        return ResponseEntity.ok(userDAO.getUsersOfForum(forum, limit, since, desc));
+    }
 
 }
