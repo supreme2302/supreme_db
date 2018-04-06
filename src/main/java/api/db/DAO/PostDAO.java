@@ -220,6 +220,7 @@ public class PostDAO {
     }
 
     public void changePost(Post post) {
+        //TODO:: coalesce
         String sql = "UPDATE posts SET message = COALESCE(?, message), " +
                 "isedited = COALESCE(true, isedited) WHERE id = ?";
         try {

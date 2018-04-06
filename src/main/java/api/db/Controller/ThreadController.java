@@ -83,6 +83,10 @@ public class ThreadController {
         if (thread == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find thread"));
         }
+
+        if (body.getMessage() == null && body.getTitle() == null) {
+            return ResponseEntity.ok(thread);
+        }
         thread.setMessage(body.getMessage());
         thread.setTitle(body.getTitle());
         threadDAO.changeThread(thread);

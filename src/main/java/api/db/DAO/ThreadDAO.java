@@ -74,7 +74,7 @@ public class ThreadDAO {
     }
 
     public void changeThread(Thread thread) {
-        String sql = "UPDATE threads SET message = ?, title = ? WHERE id = ?";
+        String sql = "UPDATE threads SET message = COALESCE(?, message), title = COALESCE(?, title) WHERE id = ?";
         jdbc.update(sql, thread.getMessage(), thread.getTitle(), thread.getId());
     }
 
