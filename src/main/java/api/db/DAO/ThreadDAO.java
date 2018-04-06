@@ -50,9 +50,25 @@ public class ThreadDAO {
 
     public Thread getThreadBySlug(String slug) {
         String sql = "SELECT * FROM threads WHERE lower(slug)=lower(?)";
-        return jdbc.queryForObject(sql, threadMapper, slug);
+        try {
+            return jdbc.queryForObject(sql, threadMapper, slug);
+        }
+        catch (EmptyResultDataAccessException error) {
+            return null;
+        }
+
     }
     public Thread getThreadById(Integer id) {
+        String sql = "SELECT * FROM threads WHERE id = (?)";
+        try {
+            return jdbc.queryForObject(sql, threadMapper, id);
+        }
+        catch (EmptyResultDataAccessException error) {
+            return null;
+        }
+
+    }
+    public Thread getThreadByIdLong(Long id) {
         String sql = "SELECT * FROM threads WHERE id = (?)";
         return jdbc.queryForObject(sql, threadMapper, id);
     }

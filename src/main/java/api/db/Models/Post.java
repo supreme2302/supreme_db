@@ -14,7 +14,7 @@ public class Post {
 
     //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
     private String created;
-    private Boolean isedited;
+    private Boolean isEdited;
     private Long parent;
     private Long thread;
     private Object[] path;
@@ -27,7 +27,7 @@ public class Post {
                 @JsonProperty("forum") String forum,
                 @JsonProperty("message") String message,
                 @JsonProperty("created") Timestamp created,
-                @JsonProperty("isedited") Boolean isedited,
+                @JsonProperty("isEdited") Boolean isEdited,
                 @JsonProperty("parent") Long parent,
                 @JsonProperty("thread") Long thread,
                 @JsonProperty("path") Object[] path) {
@@ -35,7 +35,7 @@ public class Post {
         this.author = author;
         this.forum = forum;
         this.message = message;
-        this.isedited = isedited;
+        this.isEdited = isEdited;
         this.path = path;
         if (parent == null) {
             this.parent = (long)0;
@@ -94,13 +94,6 @@ public class Post {
         this.created = created;
     }
 
-    public Boolean getEdited() {
-        return isedited;
-    }
-
-    public void setEdited(Boolean edited) {
-        isedited = edited;
-    }
 
     public Long getParent() {
         return parent;
@@ -124,5 +117,13 @@ public class Post {
 
     public void setPath(Object[] path) {
         this.path = path;
+    }
+
+    public Boolean getIsEdited() {
+        return isEdited;
+    }
+
+    public void setIsEdited(Boolean isEdited) {
+        this.isEdited = isEdited;
     }
 }

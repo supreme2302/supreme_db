@@ -6,6 +6,7 @@ import api.db.Models.Thread;
 import javafx.geometry.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class PostDAO {
 
     private static PostMapper postMapper = new PostMapper();
 
-    public Integer createPost (List<Post> posts, Thread thread) {
+    public Integer createPost (List<Post> posts, Thread thread, UserDAO userDAO) {
 
 
             for (Post post : posts) {
@@ -41,6 +42,9 @@ public class PostDAO {
 
                 Post parentPost = getPostById(post.getParent());
 
+                if (userDAO.getProfileUser(post.getAuthor()) == null) {
+                    return 404;
+                }
 
                 if (parentPost == null && post.getParent() != 0 ||
                         (parentPost != null && !parentPost.getThread().equals(post.getThread()))) {
@@ -215,6 +219,18 @@ public class PostDAO {
         return jdbc.query(sql, insertionArr.toArray(), postMapper);
     }
 
+    public void changePost(Post post) {
+        String sql = "UPDATE posts SET message = COALESCE(?, message), " +
+                "isedited = COALESCE(true, isedited) WHERE id = ?";
+        try {
+            jdbc.update(sql, post.getMessage(), post.getId());
+        }
+        catch (DuplicateKeyException error) {
+            System.out.println("kaka");
+        }
+
+    }
+
 
 
 
@@ -224,7 +240,7 @@ public class PostDAO {
         public Post mapRow(ResultSet rs, int rowNum) throws SQLException {
             String author = rs.getString("author");
             Timestamp created = rs.getTimestamp("created");
-            Boolean isEdited = rs.getBoolean("isedited");
+            Boolean isEdited = rs.getBoolean("isEdited");
             String forum = rs.getString("forum");
             Long id = rs.getLong("id");
             String message = rs.getString("message");

@@ -51,10 +51,12 @@ public class ThreadController {
         Thread thread;
 
         thread = CheckSlugOrId(slug_or_id);
+
         if (thread == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cannot find thread"));
         }
-        Integer res = postDAO.createPost(posts, thread);
+
+        Integer res = postDAO.createPost(posts, thread, userDAO);
         if (res == 409) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("Conflict"));
         }
