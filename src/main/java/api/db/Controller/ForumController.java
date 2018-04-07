@@ -103,7 +103,6 @@ public class ForumController {
     }
 
 
-    //TODO::todo
     @GetMapping(path="/{slug}/users")
     public ResponseEntity getUsers(@PathVariable("slug") String slug,
                                    @RequestParam(name="limit", required = false) Integer limit,
