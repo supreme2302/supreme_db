@@ -8,7 +8,7 @@ DROP TABLE if EXISTS forums;
 
 CREATE TABLE IF NOT EXISTS "users" (
   id SERIAL NOT NULL PRIMARY KEY,
-  nickname citext NOT NULL UNIQUE,
+  nickname citext COLLATE "ucs_basic" NOT NULL UNIQUE,
   fullname TEXT,
   email CITEXT NOT NULL UNIQUE,
   about TEXT
@@ -27,11 +27,12 @@ CREATE TABLE IF NOT EXISTS "forums" (
 
 CREATE TABLE IF NOT EXISTS "threads" (
   id SERIAL NOT NULL PRIMARY KEY,
-  author citext NOT NULL,
+  author citext COLLATE "ucs_basic" NOT NULL,
   created TIMESTAMP WITH TIME ZONE,
   forum citext,
+  forumid INTEGER,
   message TEXT NOT NULL,
-  slug citext,
+  slug citext UNIQUE ,
   title TEXT NOT NULL,
   votes INTEGER,
   FOREIGN KEY (author) REFERENCES "users" (nickname),
@@ -40,13 +41,15 @@ CREATE TABLE IF NOT EXISTS "threads" (
 
 CREATE TABLE IF NOT EXISTS "posts" (
   id SERIAL NOT NULL PRIMARY KEY,
-  author TEXT NOT NULL,
+  author citext COLLATE "ucs_basic" NOT NULL,
   created TIMESTAMP WITH TIME ZONE,
-  forum CITEXT,
-  isEdited BOOLEAN NOT NULL,
+  forum CITEXT REFERENCES "forums" (slug),
+  isEdited BOOLEAN,
   message TEXT NOT NULL,
-  parent BIGINT,
-  thread INTEGER REFERENCES "threads" (id)
+  parent BIGINT DEFAULT 0,
+  thread INTEGER REFERENCES "threads" (id),
+  path INTEGER[]
+
 );
 
 CREATE TABLE IF NOT EXISTS "votes" (
@@ -54,6 +57,6 @@ CREATE TABLE IF NOT EXISTS "votes" (
 
   nickname citext NOT NULL ,
   voice INTEGER NOT NULL,
-  threadid INTEGER REFERENCES threads(id),
+  threadid INTEGER REFERENCES "threads" (id),
   FOREIGN KEY (nickname) REFERENCES "users" (nickname)
 );

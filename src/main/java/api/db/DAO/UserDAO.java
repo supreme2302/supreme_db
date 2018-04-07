@@ -1,5 +1,6 @@
 package api.db.DAO;
 
+import api.db.Models.Forum;
 import api.db.Models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -41,7 +43,10 @@ public class UserDAO {
     }
 
     public void updateUser(User user) {
-        String sql = "UPDATE users SET fullname=?, email=?, about=? WHERE lower(nickname)=LOWER(?)";
+        String sql = "UPDATE users SET " +
+                "fullname=COALESCE(?, fullname), " +
+                "email=COALESCE(?, email), " +
+                "about=COALESCE(?, about)  WHERE lower(nickname)=LOWER(?)";
         jdbc.update(sql, user.getFullname(), user.getEmail(), user.getAbout(), user.getNickname());
     }
 
@@ -53,8 +58,71 @@ public class UserDAO {
         catch (EmptyResultDataAccessException error) {
             return null;
         }
+    }
 
+    public List<User> getUsersOfForum(Forum forum, Integer limit, String since, Boolean desc) {
+        //TODO:Доделать
+        desc = (desc != null) && desc;
+        List<Object> insertionArr = new ArrayList<>();
+        String sql = "SELECT about, fullname, email, nickname COLLATE \"ucs_basic\" FROM ( ";
+        if (since == null) {
+            sql += "(SELECT about, fullname, email, nickname FROM users AS u" +
+                    " JOIN threads AS t " +
+                    " ON u.nickname = t.author " +
+                    " AND t.forum = ?" +
+                    " UNION " +
+                    " SELECT about, fullname, email, nickname FROM users AS u " +
+                    " JOIN posts AS p " +
+                    " ON u.nickname = p.author " +
+                    " AND p.forum = ?)" +
+                    " ) as result" +
+                    " ORDER BY nickname";
+            insertionArr.add(forum.getSlug());
+            insertionArr.add(forum.getSlug());
+            if (desc) {
+                sql += " DESC";
+            }
+            if (limit != null) {
+                sql += " LIMIT ?";
+                insertionArr.add(limit);
+            }
 
+        }
+        else {
+            sql += "(SELECT about, fullname, email, nickname FROM users AS u" +
+                    " JOIN threads AS t " +
+                    " ON u.nickname = t.author " +
+                    " AND t.forum = ?" +
+                    " UNION " +
+                    " SELECT about, fullname, email, nickname FROM users AS u " +
+                    " JOIN posts AS p " +
+                    " ON u.nickname = p.author " +
+                    " AND p.forum = ?)" +
+                    " ) as result ";
+
+            insertionArr.add(forum.getSlug());
+            insertionArr.add(forum.getSlug());
+            if (desc) {
+                sql += " WHERE lower(nickname) < lower(?) COLLATE \"ucs_basic\" ORDER BY nickname DESC";
+            }
+            else {
+                sql += " WHERE lower(nickname) > lower(?) COLLATE \"ucs_basic\" ORDER BY nickname ";
+
+            }
+            insertionArr.add(since);
+
+            if (limit != null) {
+                sql += " LIMIT ?";
+                insertionArr.add(limit);
+            }
+
+        }
+        return jdbc.query(sql, insertionArr.toArray(), userMapper);
+    }
+
+    public Integer getAllUsers() {
+        String sql = "SELECT count(*) FROM users";
+        return jdbc.queryForObject(sql, Integer.class);
     }
 
 
