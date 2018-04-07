@@ -6,15 +6,12 @@ import api.db.DAO.ThreadDAO;
 import api.db.DAO.UserDAO;
 import api.db.Models.*;
 import api.db.Models.Thread;
-import javafx.geometry.Pos;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Iterator;
 import java.util.List;
 
 @RestController
@@ -34,7 +31,7 @@ public class ThreadController {
     }
 
     //TODO:: возможно переделать на один метод из DAO
-    public Thread CheckSlugOrId (String slug_or_id) {
+    public Thread GetThreadBySlugOrId(String slug_or_id) {
         if (slug_or_id.matches("\\d+")) {
             Integer id = Integer.parseInt(slug_or_id);
             return threadDAO.getThreadById(id);
@@ -50,7 +47,7 @@ public class ThreadController {
         //TODO:: 404
         Thread thread;
 
-        thread = CheckSlugOrId(slug_or_id);
+        thread = GetThreadBySlugOrId(slug_or_id);
 
         if (thread == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cannot find thread"));
@@ -70,16 +67,16 @@ public class ThreadController {
 
     @GetMapping(path="/{slug_or_id}/details")
     public ResponseEntity getDetails(@PathVariable("slug_or_id") String slug_or_id) {
-        if (CheckSlugOrId(slug_or_id) == null) {
+        if (GetThreadBySlugOrId(slug_or_id) == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find thread"));
         }
-        return ResponseEntity.ok(CheckSlugOrId(slug_or_id));
+        return ResponseEntity.ok(GetThreadBySlugOrId(slug_or_id));
     }
 
     @PostMapping(path="/{slug_or_id}/details")
     public ResponseEntity changeThread(@PathVariable("slug_or_id") String slug_or_id,
                                        @RequestBody Thread body) {
-        Thread thread = CheckSlugOrId(slug_or_id);
+        Thread thread = GetThreadBySlugOrId(slug_or_id);
         if (thread == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find thread"));
         }
@@ -90,7 +87,7 @@ public class ThreadController {
         thread.setMessage(body.getMessage());
         thread.setTitle(body.getTitle());
         threadDAO.changeThread(thread);
-        Thread result = CheckSlugOrId(slug_or_id);
+        Thread result = GetThreadBySlugOrId(slug_or_id);
         return ResponseEntity.ok(result);
 
     }
@@ -99,7 +96,7 @@ public class ThreadController {
     public ResponseEntity Vote(@PathVariable("slug_or_id") String slug,
                                @RequestBody Vote vote) {
         Thread thread;
-        thread = CheckSlugOrId(slug);
+        thread = GetThreadBySlugOrId(slug);
         User user = userDAO.getProfileUser(vote.getNickname());
         if (thread == null || user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -121,7 +118,7 @@ public class ThreadController {
             threadDAO.updateVote(vote, existVote, newVote);
         }
 
-        thread = CheckSlugOrId(slug);
+        thread = GetThreadBySlugOrId(slug);
 
         return ResponseEntity.ok(thread);
     }
@@ -138,7 +135,7 @@ public class ThreadController {
             sort = "flat";
         }
 
-        thread = CheckSlugOrId(slug_or_id);
+        thread = GetThreadBySlugOrId(slug_or_id);
         if (thread == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find thread"));
         }

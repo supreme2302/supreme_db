@@ -69,25 +69,27 @@ public class PostDAO {
             return 201;
     }
 
-    public void setPathOfPost(Post parent, Post body) {
-
-        //TODO:: TODO TODO TODO
-
-        jdbc.update(con -> {
-            PreparedStatement pst = con.prepareStatement(
-                    "update posts set" +
-                            "  path = ? " +
-                            "where id = ?");
+    private void setPathOfPost(Post parent, Post body) {
+        String sql = "UPDATE posts SET path = ? WHERE id = ?";
+        jdbc.update(connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             if (body.getParent() == 0) {
-                pst.setArray(1, con.createArrayOf("INT", new Object[]{body.getId()}));
-            } else {
-                ArrayList arr = new ArrayList<Object>(Arrays.asList(parent.getPath()));
-                arr.add(body.getId());
-                pst.setArray(1, con.createArrayOf("INT", arr.toArray()));
+                Array arrayPath = connection.createArrayOf("int",
+                        new Object[]{body.getId()});
+                preparedStatement.setArray(1, arrayPath);
+                preparedStatement.setLong(2, body.getId());
             }
-            pst.setLong(2, body.getId());
-            return pst;
+            else {
+                ArrayList innerArr = new ArrayList<>(Arrays.asList(parent.getPath()));
+                innerArr.add(body.getId());
+                Array innerArrPath = connection.createArrayOf("int",
+                        innerArr.toArray());
+                preparedStatement.setArray(1, innerArrPath);
+                preparedStatement.setLong(2, body.getId());
+            }
+            return preparedStatement;
         });
+
     }
 
     public Post getPostById (Long id) {
@@ -103,29 +105,31 @@ public class PostDAO {
 
     public List<Post> getPostsOfThreadByFlat(Thread thread, Integer limit, Integer since,
                                              Boolean desc) {
-        //TODO: like parent
+
         List<Object> insertionArr = new ArrayList<>();
         desc = (desc != null) && desc;
         String sql = "SELECT * FROM posts WHERE thread = (?)";
         insertionArr.add(thread.getId());
-        if (since != null) {
-            if (!desc) {
-                sql += " AND id > (?)";
+        if (since == null) {
+            if (desc) {
+                sql += " ORDER BY created::timestamptz DESC, id DESC ";
             }
             else {
-                sql += " AND id < (?)";
+                sql += " ORDER BY created::timestamptz, id ";
             }
 
+        }
+        else {
+            if (desc) {
+                sql += " AND id < (?) ORDER BY created::timestamptz DESC, id DESC ";
+            }
+            else {
+                sql += " AND id > (?) ORDER BY created::timestamptz, id ";
+            }
             insertionArr.add(since);
         }
-        sql += " ORDER BY created::timestamptz";
-        if (desc) {
-            sql += " DESC, id DESC";
-        } else {
-            sql += " , id ";
-        }
         if (limit != null) {
-            sql += " LIMIT (?)";
+            sql += " LIMIT (?) ";
             insertionArr.add(limit);
         }
         return jdbc.query(sql, insertionArr.toArray(), postMapper);
@@ -134,45 +138,43 @@ public class PostDAO {
     }
     public List<Post> getPostsOfThreadByTree(Thread thread, Integer limit, Integer since,
                                              Boolean desc) {
-        //TODO: like parent
         List<Object> insertionArr = new ArrayList<>();
         desc = (desc != null) && desc;
         String sql = "SELECT * FROM posts WHERE thread = (?)";
         insertionArr.add(thread.getId());
 
-            if (since != null) {
-                if (desc) {
-                    sql += " AND path < (SELECT path from posts WHERE id = (?))";
-                }
-                else {
-                    sql += " AND path > (SELECT path from posts WHERE id = (?))";
-                }
-                insertionArr.add(since);
-            }
 
-            sql += " ORDER BY path";
+        if (since != null) {
+            if (desc) {
+                sql += " AND path < (SELECT path from posts WHERE id = (?))";
+            } else {
+                sql += " AND path > (SELECT path from posts WHERE id = (?))";
+            }
+            insertionArr.add(since);
+        }
 
-            if (desc != null && desc) {
-                sql += " DESC, id DESC ";
-            }
-            sql += ", created::timestamptz, id";
-            if (limit != null) {
-                sql += " LIMIT (?)";
-                insertionArr.add(limit);
-            }
+        sql += " ORDER BY path";
+
+        if (desc) {
+            sql += " DESC, id DESC ";
+        }
+        sql += ", created::timestamptz, id";
+        if (limit != null) {
+            sql += " LIMIT (?)";
+            insertionArr.add(limit);
+        }
             return jdbc.query(sql, insertionArr.toArray(), postMapper);
     }
     public List<Post> getPostsOfThreadByParent(Thread thread, Integer limit, Integer since,
                                          Boolean desc) {
         List<Object> insertionArr = new ArrayList<>();
 
-        //TODO:: подумать и упростить
-        String sql = "SELECT * FROM posts ";
+        String sql = "SELECT * FROM posts JOIN ";
         desc = (desc != null) && desc;
         if (since == null) {
             if (desc) {
                 if (limit != null) {
-                    sql += " JOIN (SELECT id FROM posts WHERE parent = 0 AND thread = ? " +
+                    sql += " (SELECT id FROM posts WHERE parent = 0 AND thread = ? " +
                             " ORDER BY path desc LIMIT ? ) AS selected ON (selected.id = path[1] AND thread = ?) ORDER BY path[1] DESC, path";
                     insertionArr.add(thread.getId());
                     insertionArr.add(limit);
@@ -181,7 +183,7 @@ public class PostDAO {
             }
             else {
                 if (limit != null) {
-                    sql += " JOIN (SELECT id FROM posts WHERE parent = 0 AND thread = ? " +
+                    sql += " (SELECT id FROM posts WHERE parent = 0 AND thread = ? " +
                             " ORDER BY id LIMIT ? ) AS selected ON (thread = ? AND selected.id = path[1]) ORDER BY path";
                     insertionArr.add(thread.getId());
                     insertionArr.add(limit);
@@ -192,7 +194,7 @@ public class PostDAO {
         else {
             if (desc) {
                 if (limit != null) {
-                    sql += " JOIN (SELECT id FROM posts WHERE parent = 0 AND thread = ?" +
+                    sql += "  (SELECT id FROM posts WHERE parent = 0 AND thread = ?" +
                             "AND path[1] < (SELECT path[1] FROM posts WHERE id = ?)" +
                             "ORDER BY path DESC, thread DESC LIMIT ?)" +
                             "AS selected ON (thread = ? AND selected.id = path[1])" +
@@ -205,7 +207,7 @@ public class PostDAO {
             }
             else {
                 if (limit != null) {
-                    sql += " JOIN (SELECT id FROM posts WHERE parent = 0 AND thread = ?" +
+                    sql += "  (SELECT id FROM posts WHERE parent = 0 AND thread = ?" +
                             "AND path > (SELECT path FROM posts WHERE id = ?) ORDER BY id LIMIT ?)" +
                             "AS selected ON (thread = ? AND selected.id = path[1]) ORDER BY path";
                     insertionArr.add(thread.getId());
