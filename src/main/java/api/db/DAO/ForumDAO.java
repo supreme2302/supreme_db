@@ -53,6 +53,11 @@ public class ForumDAO {
         }
     }
 
+    public Integer getAllForums() {
+        String sql = "SELECT count(*) FROM forums";
+        return jdbc.queryForObject(sql, Integer.class);
+    }
+
 
 
     private static final class ForumMapper implements RowMapper<Forum> {

@@ -110,7 +110,7 @@ public class ForumController {
                                    @RequestParam(name="since", required = false) String since,
                                    @RequestParam(name="desc", required = false) Boolean desc) {
         Forum forum = forumDAO.getForumBySlug(slug);
-        System.out.println(forum);
+
         if (forum == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Can't find forum"));
         }

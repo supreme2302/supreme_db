@@ -149,6 +149,11 @@ public class ThreadDAO {
 
     }
 
+    public Integer getAllThreads() {
+        String sql = "SELECT count(*) FROM threads";
+        return jdbc.queryForObject(sql, Integer.class);
+    }
+
 
     private static class ThreadMapper implements RowMapper<Thread> {
         public Thread mapRow(ResultSet rs, int rowNum) throws SQLException {

@@ -120,6 +120,11 @@ public class UserDAO {
         return jdbc.query(sql, insertionArr.toArray(), userMapper);
     }
 
+    public Integer getAllUsers() {
+        String sql = "SELECT count(*) FROM users";
+        return jdbc.queryForObject(sql, Integer.class);
+    }
+
 
 
 

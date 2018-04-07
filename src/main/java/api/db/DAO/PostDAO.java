@@ -227,9 +227,14 @@ public class PostDAO {
             jdbc.update(sql, post.getMessage(), post.getId());
         }
         catch (DuplicateKeyException error) {
-            System.out.println("kaka");
+            System.out.println("something goes wrong");
         }
 
+    }
+
+    public Integer getAllPosts() {
+        String sql = "SELECT count(*) FROM posts";
+        return jdbc.queryForObject(sql, Integer.class);
     }
 
 
