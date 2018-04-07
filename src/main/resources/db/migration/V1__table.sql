@@ -8,7 +8,7 @@ DROP TABLE if EXISTS forums;
 
 CREATE TABLE IF NOT EXISTS "users" (
   id SERIAL NOT NULL PRIMARY KEY,
-  nickname citext NOT NULL UNIQUE,
+  nickname citext COLLATE "ucs_basic" NOT NULL UNIQUE,
   fullname TEXT,
   email CITEXT NOT NULL UNIQUE,
   about TEXT
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS "forums" (
 
 CREATE TABLE IF NOT EXISTS "threads" (
   id SERIAL NOT NULL PRIMARY KEY,
-  author citext NOT NULL,
+  author citext COLLATE "ucs_basic" NOT NULL,
   created TIMESTAMP WITH TIME ZONE,
   forum citext,
   forumid INTEGER,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS "threads" (
 
 CREATE TABLE IF NOT EXISTS "posts" (
   id SERIAL NOT NULL PRIMARY KEY,
-  author TEXT NOT NULL,
+  author citext COLLATE "ucs_basic" NOT NULL,
   created TIMESTAMP WITH TIME ZONE,
   forum CITEXT REFERENCES "forums" (slug),
   isEdited BOOLEAN,

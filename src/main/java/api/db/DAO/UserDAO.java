@@ -62,19 +62,62 @@ public class UserDAO {
 
     public List<User> getUsersOfForum(Forum forum, Integer limit, String since, Boolean desc) {
         //TODO:Доделать
+        desc = (desc != null) && desc;
         List<Object> insertionArr = new ArrayList<>();
-        String sql = "SELECT about, fullname, email, nickname FROM users AS u" +
-                " JOIN threads AS t " +
-                " ON u.nickname = t.author " +
-                " JOIN forums AS f ON f.id = ? " +
-                " UNION " +
-                " SELECT about, fullname, email, nickname FROM users AS u " +
-                " JOIN posts AS p " +
-                " ON u.nickname = p.author " +
-                " JOIN forums AS f " +
-                " ON f.id = ?";
-        insertionArr.add(forum.getId());
-        return jdbc.query(sql, new Object[] {forum.getId(), forum.getId()}, userMapper);
+        String sql = "SELECT about, fullname, email, nickname COLLATE \"ucs_basic\" FROM ( ";
+        if (since == null) {
+            sql += "(SELECT about, fullname, email, nickname FROM users AS u" +
+                    " JOIN threads AS t " +
+                    " ON u.nickname = t.author " +
+                    " AND t.forum = ?" +
+                    " UNION " +
+                    " SELECT about, fullname, email, nickname FROM users AS u " +
+                    " JOIN posts AS p " +
+                    " ON u.nickname = p.author " +
+                    " AND p.forum = ?)" +
+                    " ) as result" +
+                    " ORDER BY nickname";
+            insertionArr.add(forum.getSlug());
+            insertionArr.add(forum.getSlug());
+            if (desc) {
+                sql += " DESC";
+            }
+            if (limit != null) {
+                sql += " LIMIT ?";
+                insertionArr.add(limit);
+            }
+
+        }
+        else {
+            sql += "(SELECT about, fullname, email, nickname FROM users AS u" +
+                    " JOIN threads AS t " +
+                    " ON u.nickname = t.author " +
+                    " AND t.forum = ?" +
+                    " UNION " +
+                    " SELECT about, fullname, email, nickname FROM users AS u " +
+                    " JOIN posts AS p " +
+                    " ON u.nickname = p.author " +
+                    " AND p.forum = ?)" +
+                    " ) as result ";
+
+            insertionArr.add(forum.getSlug());
+            insertionArr.add(forum.getSlug());
+            if (desc) {
+                sql += " WHERE lower(nickname) < lower(?) COLLATE \"ucs_basic\" ORDER BY nickname DESC";
+            }
+            else {
+                sql += " WHERE lower(nickname) > lower(?) COLLATE \"ucs_basic\" ORDER BY nickname ";
+
+            }
+            insertionArr.add(since);
+
+            if (limit != null) {
+                sql += " LIMIT ?";
+                insertionArr.add(limit);
+            }
+
+        }
+        return jdbc.query(sql, insertionArr.toArray(), userMapper);
     }
 
 
