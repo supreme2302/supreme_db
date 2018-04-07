@@ -2,6 +2,15 @@ FROM ubuntu:16.04
 
 MAINTAINER Chuvahov Egor
 
+# Update packages
+RUN apt-get -y update
+
+# Install postgresql
+ENV PGVER 9.5
+RUN apt-get install -y postgresql-$PGVER
+
+USER postgres
+
 RUN /etc/init.d/postgresql start &&\
         psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
          createdb -E UTF8 -T template0 -O docker docker &&\
