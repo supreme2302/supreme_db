@@ -4,7 +4,6 @@ package api.db.Controller;
 import api.db.DAO.UserDAO;
 import api.db.Models.Message;
 import api.db.Models.User;
-import org.apache.tomcat.util.http.parser.HttpParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -59,6 +58,7 @@ public class UserController {
         catch (DuplicateKeyException error) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("Can't find user"));
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+        User result = userDAO.getProfileUser(nickname);
+        return ResponseEntity.ok(result);
     }
 }

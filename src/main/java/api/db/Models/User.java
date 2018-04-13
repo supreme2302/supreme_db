@@ -8,6 +8,7 @@ public class User {
     private String fullname;
     private String email;
     private String about;
+    private Integer id;
 
 
 
@@ -54,5 +55,13 @@ public class User {
 
     public void setAbout(String about) {
         this.about = about;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 }
