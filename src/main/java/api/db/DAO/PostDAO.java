@@ -143,21 +143,27 @@ public class PostDAO {
         String sql = "SELECT * FROM posts WHERE thread = (?)";
         insertionArr.add(thread.getId());
 
-
-        if (since != null) {
+        if (since == null) {
             if (desc) {
-                sql += " AND path < (SELECT path from posts WHERE id = (?))";
-            } else {
-                sql += " AND path > (SELECT path from posts WHERE id = (?))";
+                sql += " ORDER BY path DESC, id DESC";
+            }
+            else {
+                sql += " ORDER BY path, id";
+            }
+        }
+        else {
+            if (desc) {
+                sql += " AND path < (SELECT path FROM posts WHERE id = (?))" +
+                        "  ORDER BY path DESC, id DESC";
+            }
+            else {
+                sql += " AND path > (SELECT path FROM posts WHERE id = (?)) " +
+                        "  ORDER BY path, id";
             }
             insertionArr.add(since);
         }
 
-        sql += " ORDER BY path";
-
-        if (desc) {
-            sql += " DESC, id DESC ";
-        }
+        //возможно не нужна
         sql += ", created::timestamptz, id";
         if (limit != null) {
             sql += " LIMIT (?)";
