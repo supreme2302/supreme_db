@@ -3,7 +3,6 @@ package api.db.DAO;
 
 import api.db.Models.Post;
 import api.db.Models.Thread;
-import javafx.geometry.Pos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
