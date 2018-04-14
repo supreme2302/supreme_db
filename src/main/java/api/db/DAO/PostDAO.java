@@ -11,11 +11,11 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.StyledEditorKit;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+
 import java.util.List;
 
 @Service
