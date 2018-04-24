@@ -8,6 +8,8 @@ import api.db.Models.*;
 import api.db.Models.Thread;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -102,26 +104,60 @@ public class ThreadController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new Message("Cannot find thread or user"));
         }
-        Vote existVote = threadDAO.getVoteByNick(vote.getNickname());
+        Vote existVote = threadDAO.getVoteByNick(vote.getNickname(), thread.getId());
         if (existVote == null) {
             vote.setThreadid(thread.getId());
             threadDAO.createVote(vote);
         }
         else {
-            int newVote = 0;
-            if (existVote.getVoice() > 0 && vote.getVoice() < 0) {
+            int newVote;
+            if (existVote.getVoice().equals(vote.getVoice())) {
+                return ResponseEntity.ok(GetThreadBySlugOrId(slug));
+            }
+            else if (existVote.getVoice() > 0 && vote.getVoice() < 0) {
                 newVote = -2;
+                threadDAO.updateVote(vote, existVote, newVote);
             }
             else if (existVote.getVoice() < 0 && vote.getVoice() > 0) {
                 newVote = 2;
+                threadDAO.updateVote(vote, existVote, newVote);
             }
-            threadDAO.updateVote(vote, existVote, newVote);
         }
 
         thread = GetThreadBySlugOrId(slug);
 
         return ResponseEntity.ok(thread);
     }
+
+
+//    //todo
+//    @PostMapping(path = "/{slug_or_id}/vote")
+//    public ResponseEntity setVote(@PathVariable(name = "slug_or_id") String slug_or_id,
+//                                  @RequestBody Vote vote) {
+//
+//        Thread thread;
+//        thread = GetThreadBySlugOrId(slug_or_id);
+//        if (thread == null || userDAO.getProfileUser(vote.getNickname()) == null)
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find thread"));
+//
+//        Vote checkVote = threadDAO.getVotebyVote(vote, thread);//голосовал ли он ранее
+//
+//        if (checkVote == null) {
+//            threadDAO.createVotePasha(thread, vote.getVoice()/*, flag*/);//прибавление голоса в ветке или уменьшение
+//            threadDAO.insert_or_update_Vote(vote, thread);
+//        }
+//
+//        if (checkVote != null && (vote.getVoice()).equals(checkVote.getVoice())) {
+//            return ResponseEntity.ok(threadDAO.getThreadById((int)thread.getId()));
+//        }
+//
+//        if (checkVote != null && !(vote.getVoice().equals(checkVote.getVoice()))) {
+//            threadDAO.createVotePasha(thread, (vote.getVoice() * 2)/*, flag*/);//прибавление голоса в ветке или уменьшение
+//            threadDAO.updateVote(vote, thread);
+//        }
+//        return ResponseEntity.ok(GetThreadBySlugOrId(slug_or_id));
+//    }
+
 
     @GetMapping(path="/{slug_or_id}/posts")
     public ResponseEntity getPosts(@PathVariable("slug_or_id") String slug_or_id,

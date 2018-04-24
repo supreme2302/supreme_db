@@ -40,12 +40,14 @@ public class ThreadDAO {
 
 
         //Возможно, для скорости следует заменить на инкремент
-        String sql_for_forums = "UPDATE forums SET threads = (" +
-                "  SELECT count(*) FROM threads" +
-                "  WHERE forum = (?)" +
-                ")" +
-                "FROM threads WHERE forums.slug = (?)";
-        jdbc.update(sql_for_forums, body.getForum(), body.getForum());
+//        String sql_for_forums = "UPDATE forums SET threads = (" +
+//                "  SELECT count(*) FROM threads" +
+//                "  WHERE forum = (?)" +
+//                ")" +
+//                "FROM threads WHERE forums.slug = (?)";
+//        jdbc.update(sql_for_forums, body.getForum(), body.getForum());
+        String sql_for_forums = "UPDATE forums SET threads = threads + 1 WHERE forums.slug = (?)";
+        jdbc.update(sql_for_forums, body.getForum());
     }
 
     public Thread getThreadBySlug(String slug) {
@@ -112,14 +114,15 @@ public class ThreadDAO {
     }
 
     public void createVote(Vote vote) {
-        String sql = "INSERT INTO votes (nickname, voice, threadid) VALUES (?, ?, ?) RETURNING id";
-        vote.setId(jdbc.queryForObject(sql, new Object[] {vote.getNickname(), vote.getVoice(),
-        vote.getThreadid()}, Integer.class));
+        String sql = "INSERT INTO votes (nickname, voice, threadid) VALUES (?, ?, ?)";
+        jdbc.update(sql, vote.getNickname(), vote.getVoice(),
+        vote.getThreadid());
 
         String update_sql = "UPDATE threads SET votes = votes + ? WHERE id=(?)";
         jdbc.update(update_sql, vote.getVoice(), vote.getThreadid());
 
     }
+
 
     public void updateVote(Vote vote, Vote existVote, int newVote) {
         String sql = "UPDATE votes SET voice = ? WHERE id = (?)";
@@ -130,8 +133,9 @@ public class ThreadDAO {
     }
 
 
-    public Vote getVoteByNick(String nickname) {
-        String sql = "SELECT * FROM votes WHERE lower(nickname) = lower(?)";
+
+    public Vote getVoteByNick(String nickname, Integer threadId) {
+        String sql = "SELECT * FROM votes WHERE lower(nickname) = lower(?) AND threadid = (?)";
         try {
             return jdbc.queryForObject(sql, new RowMapper<Vote>() {
                 @Override
@@ -141,7 +145,7 @@ public class ThreadDAO {
                             resultSet.getInt("voice"),
                             resultSet.getInt("threadid"));
                 }
-            }, nickname);
+            }, nickname, threadId);
         }
         catch (EmptyResultDataAccessException error) {
             return null;
