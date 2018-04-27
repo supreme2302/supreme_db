@@ -1,11 +1,16 @@
 FROM ubuntu:16.04
+<<<<<<< HEAD
 MAINTAINER Chuvahov Egor
+=======
+MAINTAINER Chuvashov Egor
+>>>>>>> master
 RUN apt-get update -y
 ENV PGVER 9.5
 RUN apt-get install -y postgresql-$PGVER
 USER postgres
 
-RUN /etc/init.d/postgresql start &&        psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" && createdb -E UTF8 -T template0 -O docker forumdb && /etc/init.d/postgresql stop
+RUN /etc/init.d/postgresql start &&        psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" && createdb -E UTF8 -T template0 -O docker docker && /etc/init.d/postgresql stop
+
 
 RUN echo "local all all trust" >> /etc/postgresql/$PGVER/main/pg_hba.conf
 RUN echo "host  all all 127.0.0.1/32 trust" >> /etc/postgresql/$PGVER/main/pg_hba.conf
@@ -40,7 +45,7 @@ EXPOSE 5432
 
 VOLUME /etc/postgresql /var/log/postgresql /var/lib/postgresql
 USER root
-RUN apt-get install -y openjdk-8-jdk-headless
+RUN apt-get install -y openjdk-9-jdk-headless
 RUN apt-get install -y maven
 
 ENV WORK /opt/
@@ -50,4 +55,6 @@ RUN mvn package
 
 EXPOSE 5000
 
-CMD service postgresql start && java -Xms200M -Xmx200M -Xss256K -jar target/forumdb-1.0-SNAPSHOT.jar
+
+CMD service postgresql start && java -Xms200M -Xmx200M -Xss256K -jar target/supreme-1.0-SNAPSHOT.jar
+

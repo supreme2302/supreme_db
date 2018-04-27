@@ -8,6 +8,8 @@ import api.db.Models.*;
 import api.db.Models.Thread;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -102,26 +104,32 @@ public class ThreadController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new Message("Cannot find thread or user"));
         }
-        Vote existVote = threadDAO.getVoteByNick(vote.getNickname());
+        Vote existVote = threadDAO.getVoteByNick(vote.getNickname(), thread.getId());
         if (existVote == null) {
             vote.setThreadid(thread.getId());
             threadDAO.createVote(vote);
         }
         else {
-            int newVote = 0;
-            if (existVote.getVoice() > 0 && vote.getVoice() < 0) {
+            int newVote;
+            if (existVote.getVoice().equals(vote.getVoice())) {
+                return ResponseEntity.ok(GetThreadBySlugOrId(slug));
+            }
+            else if (existVote.getVoice() > 0 && vote.getVoice() < 0) {
                 newVote = -2;
+                threadDAO.updateVote(vote, existVote, newVote);
             }
             else if (existVote.getVoice() < 0 && vote.getVoice() > 0) {
                 newVote = 2;
+                threadDAO.updateVote(vote, existVote, newVote);
             }
-            threadDAO.updateVote(vote, existVote, newVote);
         }
 
         thread = GetThreadBySlugOrId(slug);
 
         return ResponseEntity.ok(thread);
     }
+
+
 
     @GetMapping(path="/{slug_or_id}/posts")
     public ResponseEntity getPosts(@PathVariable("slug_or_id") String slug_or_id,
