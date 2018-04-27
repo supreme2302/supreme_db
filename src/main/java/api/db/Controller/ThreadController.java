@@ -130,34 +130,6 @@ public class ThreadController {
     }
 
 
-//    //todo
-//    @PostMapping(path = "/{slug_or_id}/vote")
-//    public ResponseEntity setVote(@PathVariable(name = "slug_or_id") String slug_or_id,
-//                                  @RequestBody Vote vote) {
-//
-//        Thread thread;
-//        thread = GetThreadBySlugOrId(slug_or_id);
-//        if (thread == null || userDAO.getProfileUser(vote.getNickname()) == null)
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find thread"));
-//
-//        Vote checkVote = threadDAO.getVotebyVote(vote, thread);//голосовал ли он ранее
-//
-//        if (checkVote == null) {
-//            threadDAO.createVotePasha(thread, vote.getVoice()/*, flag*/);//прибавление голоса в ветке или уменьшение
-//            threadDAO.insert_or_update_Vote(vote, thread);
-//        }
-//
-//        if (checkVote != null && (vote.getVoice()).equals(checkVote.getVoice())) {
-//            return ResponseEntity.ok(threadDAO.getThreadById((int)thread.getId()));
-//        }
-//
-//        if (checkVote != null && !(vote.getVoice().equals(checkVote.getVoice()))) {
-//            threadDAO.createVotePasha(thread, (vote.getVoice() * 2)/*, flag*/);//прибавление голоса в ветке или уменьшение
-//            threadDAO.updateVote(vote, thread);
-//        }
-//        return ResponseEntity.ok(GetThreadBySlugOrId(slug_or_id));
-//    }
-
 
     @GetMapping(path="/{slug_or_id}/posts")
     public ResponseEntity getPosts(@PathVariable("slug_or_id") String slug_or_id,
