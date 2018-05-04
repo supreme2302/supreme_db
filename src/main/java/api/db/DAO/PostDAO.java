@@ -3,15 +3,18 @@ package api.db.DAO;
 
 import api.db.Models.Post;
 import api.db.Models.Thread;
+import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import javax.annotation.Generated;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,56 +35,56 @@ public class PostDAO {
 
     private static PostMapper postMapper = new PostMapper();
 
-    public Integer createPost (List<Post> posts, Thread thread, UserDAO userDAO) {
-        int count = 0;
-
+    public Integer createPost (List<Post> posts, Thread thread, UserDAO userDAO, String created_date) {
         try {
-            connection = DriverManager.getConnection(
-                    "jdbc:postgresql://localhost:5432/docker",
-                    "docker",
-                    "docker"
-            );
+//            connection = DriverManager.getConnection(
+//                    "jdbc:postgresql://localhost:5432/docker",
+//                    "docker",
+//                    "docker"
+//            );
+            connection = jdbc.getDataSource().getConnection();
             String sql = "INSERT INTO posts (author, message, parent, created, thread, forum) " +
-                    "VALUES (?, ?, ?, ?::timestamptz, ?, ?)";
-
+                    "VALUES (?, ?, ?, ?::TIMESTAMP WITH TIME ZONE , ?, ?)";
 
             try (PreparedStatement ps = connection.prepareStatement(sql,
-                    Statement.NO_GENERATED_KEYS)) {
+                    new String[] {"id"})) {
                 for (Post post : posts) {
                     post.setForum(thread.getForum());
                     post.setThread((long) thread.getId());
-                    post.setCreated(posts.get(0).getCreated());
-
-                    Post parentPost = getPostById(post.getParent());
+                    post.setCreated(created_date);
 
                     if (userDAO.getProfileUser(post.getAuthor()) == null) {
                         return 404;
                     }
 
+                    //todo придумать как не вызывать запрос два раза
+                    Post parentPost = getPostById(post.getParent());
                     if (parentPost == null && post.getParent() != 0 ||
                             (parentPost != null && !parentPost.getThread().equals(post.getThread()))) {
                         return 409;
                     }
+
                     ps.setString(1, post.getAuthor());
                     ps.setString(2, post.getMessage());
                     ps.setLong(3, post.getParent());
-                    ps.setString(4, post.getCreated());
+                    ps.setString(4, created_date);
                     ps.setLong(5, thread.getId());
                     ps.setString(6, thread.getForum());
                     ps.addBatch();
-                    Long id = jdbc.queryForObject("SELECT nextval('posts_id_seq')", Long.class);
-                    post.setId(id);
-
-//                Integer id = jdbc.queryForObject(sql, new Object[] {post.getAuthor(),
-//                        post.getMessage(), post.getParent(), post.getCreated(),
-//                                thread.getId(), thread.getForum()},
-//                        Integer.class);
-//                post.setId((long)id);
-                    setPathOfPost(parentPost, post);
-                    ++count;
                 }
                 ps.executeBatch();
+                ResultSet rs = ps.getGeneratedKeys();
+                for (Post post : posts) {
+                    if (rs.next()) {
+                        Long key = rs.getLong(1);
+                        post.setId(key);
+                    }
+                    Post parentPost = getPostById(post.getParent());
+                    setPathOfPost(parentPost, post);
+                }
                 connection.close();
+
+
             } catch (Exception error) {
                 error.printStackTrace();
             }
@@ -89,7 +92,6 @@ public class PostDAO {
             error.printStackTrace();
         }
         String updateForumSql = "UPDATE forums SET posts = posts + ? WHERE slug = ?";
-        System.out.println("count:  -  " + count);
         jdbc.update(updateForumSql, posts.size(), thread.getForum());
         return 201;
     }
@@ -125,6 +127,16 @@ public class PostDAO {
             return jdbc.queryForObject(sql, postMapper, id);
         }
         catch (DataAccessException error) {
+            return null;
+        }
+    }
+
+    public Long checkExistOfThePost(Long id) {
+        try {
+            String sql = "SELECT id FROM posts WHERE id = (?)";
+            //return jdbc.queryForObject(sql, new Object[]{id}, Long.class);
+            return jdbc.queryForObject(sql, Long.class, id);
+        } catch (DataAccessException error) {
             return null;
         }
     }

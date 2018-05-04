@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @RestController
@@ -55,7 +56,8 @@ public class ThreadController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cannot find thread"));
         }
 
-        Integer res = postDAO.createPost(posts, thread, userDAO);
+        Integer res = postDAO.createPost(posts, thread, userDAO,
+                new Timestamp(System.currentTimeMillis()).toInstant().toString());
         if (res == 409) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("Conflict"));
         }
