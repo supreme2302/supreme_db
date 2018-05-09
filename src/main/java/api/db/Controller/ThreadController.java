@@ -56,13 +56,17 @@ public class ThreadController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cannot find thread"));
         }
 
-        Integer res = postDAO.createPost(posts, thread, userDAO,
-                new Timestamp(System.currentTimeMillis()).toInstant().toString());
-        if (res == 409) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("Conflict"));
-        }
-        else if (res == 404) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find something"));
+        try {
+            Integer res = postDAO.createPost(posts, thread, userDAO,
+                    new Timestamp(System.currentTimeMillis()).toInstant().toString());
+            if (res == 409) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("Conflict"));
+            }
+            else if (res == 404) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find something"));
+            }
+        } catch (Exception error) {
+            error.printStackTrace();
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(posts);

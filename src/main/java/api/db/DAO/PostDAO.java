@@ -26,7 +26,6 @@ import java.util.List;
 public class PostDAO {
 
     private JdbcTemplate jdbc;
-    private Connection connection;
 
     @Autowired
     public PostDAO(JdbcTemplate jdbc) {
@@ -35,19 +34,25 @@ public class PostDAO {
 
     private static PostMapper postMapper = new PostMapper();
 
-    public Integer createPost (List<Post> posts, Thread thread, UserDAO userDAO, String created_date) {
-        try {
+    public Integer createPost (List<Post> posts, Thread thread, UserDAO userDAO, String created_date) throws SQLException {
+        //try {
 //            connection = DriverManager.getConnection(
 //                    "jdbc:postgresql://localhost:5432/docker",
 //                    "docker",
 //                    "docker"
 //            );
-            connection = jdbc.getDataSource().getConnection();
-            String sql = "INSERT INTO posts (author, message, parent, created, thread, forum) " +
-                    "VALUES (?, ?, ?, ?::TIMESTAMP WITH TIME ZONE , ?, ?)";
+            Connection connection = jdbc.getDataSource().getConnection();
+            String sql = "INSERT INTO posts (author, message, parent, created, thread, forum, id, path) " +
+                    "VALUES (?, ?, ?, ?::TIMESTAMP WITH TIME ZONE , ?, ?, ?, ?)";
+            List<Post> postsArr = new ArrayList<>();
+//            try (PreparedStatement ps = connection.prepareStatement(sql,
+//                    Statement.NO_GENERATED_KEYS)) {
+//                final List<Long> ids = jdbc.queryForList("select nextval('posts_id_seq')" +
+//                        " from generate_series(1, ?)", Long.class, posts.size());
 
-            try (PreparedStatement ps = connection.prepareStatement(sql,
-                    new String[] {"id"})) {
+        // int i = 0;
+        PreparedStatement ps = connection.prepareStatement(sql,
+                        Statement.NO_GENERATED_KEYS);
                 for (Post post : posts) {
                     post.setForum(thread.getForum());
                     post.setThread((long) thread.getId());
@@ -57,40 +62,70 @@ public class PostDAO {
                         return 404;
                     }
 
+                    final Long idss = jdbc.queryForObject("select nextval('posts_id_seq')",
+                            Long.class);
+
                     //todo придумать как не вызывать запрос два раза
                     Post parentPost = getPostById(post.getParent());
+                    postsArr.add(parentPost);
                     if (parentPost == null && post.getParent() != 0 ||
                             (parentPost != null && !parentPost.getThread().equals(post.getThread()))) {
                         return 409;
                     }
+                    post.setId(idss);
+                    //System.out.println(post.getId());
 
+                    //todo вынести в отдельную функцию
+                    ArrayList obj;
+                    if (post.getParent() == 0) {
+                        ArrayList arr = new ArrayList<>(Arrays.asList(idss));
+                        obj = arr;
+                    }
+                    else {
+                        ArrayList arr = new ArrayList<>(Arrays.asList(parentPost.getPath()));
+                        arr.add(idss);
+                        obj = arr;
+                    }
                     ps.setString(1, post.getAuthor());
                     ps.setString(2, post.getMessage());
                     ps.setLong(3, post.getParent());
                     ps.setString(4, created_date);
                     ps.setLong(5, thread.getId());
                     ps.setString(6, thread.getForum());
+                    ps.setLong(7, post.getId());
+                    ps.setArray(8, connection.createArrayOf("int", obj.toArray()));
                     ps.addBatch();
+                   // ++i;
+//                    setPathOfPost(parentPost, post);
                 }
                 ps.executeBatch();
-                ResultSet rs = ps.getGeneratedKeys();
-                for (Post post : posts) {
-                    if (rs.next()) {
-                        Long key = rs.getLong(1);
-                        post.setId(key);
-                    }
-                    Post parentPost = getPostById(post.getParent());
-                    setPathOfPost(parentPost, post);
-                }
                 connection.close();
 
+//                ResultSet rs = ps.getGeneratedKeys();
+//                int i = 0;
+//                for (Post post : posts) {
+//                    if (rs.next()) {
+//                        Long key = rs.getLong(1);
+//                        post.setId(key);
+//
+//                    }
+////                    Post parentPost = getPostById(post.getParent());
+//
+//                    ++i;
+//                }
 
-            } catch (Exception error) {
-                error.printStackTrace();
-            }
-        } catch (Exception error) {
-            error.printStackTrace();
-        }
+
+//            } catch (Exception error) {
+//                error.printStackTrace();
+//            }
+//            finally {
+//                connection.close();
+//            }
+
+//        } catch (Exception error) {
+//            error.printStackTrace();
+//        }
+//        connection.close();
         String updateForumSql = "UPDATE forums SET posts = posts + ? WHERE slug = ?";
         jdbc.update(updateForumSql, posts.size(), thread.getForum());
         return 201;
@@ -122,6 +157,7 @@ public class PostDAO {
     }
 
     public Post getPostById (Long id) {
+        //System.out.println("id   " + id);
         try {
             String sql = "SELECT * FROM posts WHERE id = (?)";
             return jdbc.queryForObject(sql, postMapper, id);
