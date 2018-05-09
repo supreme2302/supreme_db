@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @RestController
@@ -55,12 +56,17 @@ public class ThreadController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cannot find thread"));
         }
 
-        Integer res = postDAO.createPost(posts, thread, userDAO);
-        if (res == 409) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("Conflict"));
-        }
-        else if (res == 404) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find something"));
+        try {
+            Integer res = postDAO.createPost(posts, thread, userDAO,
+                    new Timestamp(System.currentTimeMillis()).toInstant().toString());
+            if (res == 409) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("Conflict"));
+            }
+            else if (res == 404) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find something"));
+            }
+        } catch (Exception error) {
+            error.printStackTrace();
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(posts);
@@ -129,34 +135,6 @@ public class ThreadController {
         return ResponseEntity.ok(thread);
     }
 
-
-//    //todo
-//    @PostMapping(path = "/{slug_or_id}/vote")
-//    public ResponseEntity setVote(@PathVariable(name = "slug_or_id") String slug_or_id,
-//                                  @RequestBody Vote vote) {
-//
-//        Thread thread;
-//        thread = GetThreadBySlugOrId(slug_or_id);
-//        if (thread == null || userDAO.getProfileUser(vote.getNickname()) == null)
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find thread"));
-//
-//        Vote checkVote = threadDAO.getVotebyVote(vote, thread);//голосовал ли он ранее
-//
-//        if (checkVote == null) {
-//            threadDAO.createVotePasha(thread, vote.getVoice()/*, flag*/);//прибавление голоса в ветке или уменьшение
-//            threadDAO.insert_or_update_Vote(vote, thread);
-//        }
-//
-//        if (checkVote != null && (vote.getVoice()).equals(checkVote.getVoice())) {
-//            return ResponseEntity.ok(threadDAO.getThreadById((int)thread.getId()));
-//        }
-//
-//        if (checkVote != null && !(vote.getVoice().equals(checkVote.getVoice()))) {
-//            threadDAO.createVotePasha(thread, (vote.getVoice() * 2)/*, flag*/);//прибавление голоса в ветке или уменьшение
-//            threadDAO.updateVote(vote, thread);
-//        }
-//        return ResponseEntity.ok(GetThreadBySlugOrId(slug_or_id));
-//    }
 
 
     @GetMapping(path="/{slug_or_id}/posts")
