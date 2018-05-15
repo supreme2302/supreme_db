@@ -1,7 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS CITEXT;
 
-DROP TABLE if EXISTS votes CASCADE;
 DROP TABLE if EXISTS posts CASCADE;
+DROP TABLE if EXISTS votes CASCADE;
 DROP TABLE if EXISTS threads CASCADE;
 DROP TABLE if EXISTS forums CASCADE;
 DROP TABLE if EXISTS users CASCADE;
@@ -60,3 +60,11 @@ CREATE TABLE IF NOT EXISTS "votes" (
   threadid INTEGER REFERENCES "threads" (id),
   FOREIGN KEY (nickname) REFERENCES "users" (nickname)
 );
+
+
+drop index if EXISTS sortPostsTree;
+drop INDEX IF EXISTS usersIx;
+DROP INDEX IF EXISTS onT;
+CREATE INDEX sortPostsTree ON posts(thread, path, id);
+CREATE INDEX usersIx on users(nickname);
+CREATE INDEX onT on threads(forumid, created);
