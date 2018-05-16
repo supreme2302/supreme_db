@@ -64,59 +64,87 @@ public class UserDAO {
         //TODO:Доделать
         desc = (desc != null) && desc;
         List<Object> insertionArr = new ArrayList<>();
-        String sql = "SELECT about, fullname, email, nickname COLLATE \"ucs_basic\" FROM ( ";
+        String sql = "SELECT about, fullname, email, nickname COLLATE \"ucs_basic\" FROM \"allUsers\"";
         if (since == null) {
-            sql += "(SELECT about, fullname, email, nickname FROM users AS u" +
-                    " JOIN threads AS t " +
-                    " ON u.nickname = t.author " +
-                    " AND t.forum = ?" +
-                    " UNION " +
-                    " SELECT about, fullname, email, nickname FROM users AS u " +
-                    " JOIN posts AS p " +
-                    " ON u.nickname = p.author " +
-                    " AND p.forum = ?)" +
-                    " ) as result" +
-                    " ORDER BY nickname";
-            insertionArr.add(forum.getSlug());
+            sql += " WHERE forum = ? ORDER BY nickname ";
             insertionArr.add(forum.getSlug());
             if (desc) {
-                sql += " DESC";
+                sql += " DESC ";
             }
             if (limit != null) {
                 sql += " LIMIT ?";
                 insertionArr.add(limit);
             }
-
         }
         else {
-            sql += "(SELECT about, fullname, email, nickname FROM users AS u" +
-                    " JOIN threads AS t " +
-                    " ON u.nickname = t.author " +
-                    " AND t.forum = ?" +
-                    " UNION " +
-                    " SELECT about, fullname, email, nickname FROM users AS u " +
-                    " JOIN posts AS p " +
-                    " ON u.nickname = p.author " +
-                    " AND p.forum = ?)" +
-                    " ) as result ";
-
-            insertionArr.add(forum.getSlug());
+            sql += " WHERE forum = ? ";
             insertionArr.add(forum.getSlug());
             if (desc) {
-                sql += " WHERE lower(nickname) < lower(?) COLLATE \"ucs_basic\" ORDER BY nickname DESC";
+                sql += " AND lower(nickname) < lower(?) COLLATE \"ucs_basic\" ORDER BY nickname DESC";
             }
             else {
-                sql += " WHERE lower(nickname) > lower(?) COLLATE \"ucs_basic\" ORDER BY nickname ";
+                sql += " AND lower(nickname) > lower(?) COLLATE \"ucs_basic\" ORDER BY nickname ";
 
             }
             insertionArr.add(since);
-
             if (limit != null) {
                 sql += " LIMIT ?";
                 insertionArr.add(limit);
             }
-
         }
+//        String sql = "SELECT about, fullname, email, nickname COLLATE \"ucs_basic\" FROM ( ";
+//        if (since == null) {
+//            sql += "(SELECT about, fullname, email, nickname FROM users AS u" +
+//                    " JOIN threads AS t " +
+//                    " ON u.nickname = t.author " +
+//                    " AND t.forum = ?" +
+//                    " UNION " +
+//                    " SELECT about, fullname, email, nickname FROM users AS u " +
+//                    " JOIN posts AS p " +
+//                    " ON u.nickname = p.author " +
+//                    " AND p.forum = ?)" +
+//                    " ) as result" +
+//                    " ORDER BY nickname";
+//            insertionArr.add(forum.getSlug());
+//            insertionArr.add(forum.getSlug());
+//            if (desc) {
+//                sql += " DESC";
+//            }
+//            if (limit != null) {
+//                sql += " LIMIT ?";
+//                insertionArr.add(limit);
+//            }
+//
+//        }
+//        else {
+//            sql += "(SELECT about, fullname, email, nickname FROM users AS u" +
+//                    " JOIN threads AS t " +
+//                    " ON u.nickname = t.author " +
+//                    " AND t.forum = ?" +
+//                    " UNION " +
+//                    " SELECT about, fullname, email, nickname FROM users AS u " +
+//                    " JOIN posts AS p " +
+//                    " ON u.nickname = p.author " +
+//                    " AND p.forum = ?)" +
+//                    " ) as result ";
+//
+//            insertionArr.add(forum.getSlug());
+//            insertionArr.add(forum.getSlug());
+//            if (desc) {
+//                sql += " WHERE lower(nickname) < lower(?) COLLATE \"ucs_basic\" ORDER BY nickname DESC";
+//            }
+//            else {
+//                sql += " WHERE lower(nickname) > lower(?) COLLATE \"ucs_basic\" ORDER BY nickname ";
+//
+//            }
+//            insertionArr.add(since);
+//
+//            if (limit != null) {
+//                sql += " LIMIT ?";
+//                insertionArr.add(limit);
+//            }
+//
+//        }
         return jdbc.query(sql, insertionArr.toArray(), userMapper);
     }
 

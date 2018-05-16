@@ -3,6 +3,7 @@ package api.db.DAO;
 
 import api.db.Models.Forum;
 import api.db.Models.Thread;
+import api.db.Models.User;
 import api.db.Models.Vote;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -28,7 +29,7 @@ public class ThreadDAO {
         this.jdbc = jdbc;
     }
 
-    public void createThread(Thread body) {
+    public void createThread(Thread body, UserDAO userDAO) {
         String sql = "INSERT INTO threads (author, created, message, title, " +
                 "forum, forumid, slug, votes) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
 //        jdbc.update(sql, body.getAuthor(), body.getCreated(), body.getMessage(), body.getTitle(),
@@ -46,6 +47,12 @@ public class ThreadDAO {
 //                ")" +
 //                "FROM threads WHERE forums.slug = (?)";
 //        jdbc.update(sql_for_forums, body.getForum(), body.getForum());
+        User threadAuthor = userDAO.getProfileUser(body.getAuthor());
+
+            String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?) ON CONFLICT (nickname) DO NOTHING ";
+            jdbc.update(updateAllUsers, threadAuthor.getAbout(), threadAuthor.getFullname(), threadAuthor.getEmail(), threadAuthor.getNickname(), body.getForum());
+
+
         String sql_for_forums = "UPDATE forums SET threads = threads + 1 WHERE forums.slug = (?)";
         jdbc.update(sql_for_forums, body.getForum());
     }

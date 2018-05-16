@@ -3,6 +3,7 @@ package api.db.DAO;
 
 import api.db.Models.Post;
 import api.db.Models.Thread;
+import api.db.Models.User;
 import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -58,7 +59,8 @@ public class PostDAO {
                     post.setThread((long) thread.getId());
                     post.setCreated(created_date);
 
-                    if (userDAO.getProfileUser(post.getAuthor()) == null) {
+                    User postAuthor = userDAO.getProfileUser(post.getAuthor());
+                    if (postAuthor == null) {
                         return 404;
                     }
 
@@ -97,6 +99,12 @@ public class PostDAO {
                     ps.addBatch();
                    // ++i;
 //                    setPathOfPost(parentPost, post);
+                        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?)  ON CONFLICT (nickname) DO NOTHING ";
+                        jdbc.update(updateAllUsers, postAuthor.getAbout(), postAuthor.getFullname(), postAuthor.getEmail(), postAuthor.getNickname(), thread.getForum());
+
+
+
+
                 }
                 ps.executeBatch();
                 connection.close();
@@ -126,6 +134,7 @@ public class PostDAO {
 //            error.printStackTrace();
 //        }
 //        connection.close();
+
         String updateForumSql = "UPDATE forums SET posts = posts + ? WHERE slug = ?";
         jdbc.update(updateForumSql, posts.size(), thread.getForum());
         return 201;

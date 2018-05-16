@@ -65,7 +65,7 @@ public class ForumController {
         }
 
         try {
-            threadDAO.createThread(body);
+            threadDAO.createThread(body, userDAO);
         }
         catch (DuplicateKeyException error) {
 

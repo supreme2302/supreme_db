@@ -1,5 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS CITEXT;
 
+DROP TABLE IF EXISTS allUsers CASCADE;
 DROP TABLE if EXISTS posts CASCADE;
 DROP TABLE if EXISTS votes CASCADE;
 DROP TABLE if EXISTS threads CASCADE;
@@ -59,6 +60,16 @@ CREATE TABLE IF NOT EXISTS "votes" (
   voice INTEGER NOT NULL,
   threadid INTEGER REFERENCES "threads" (id),
   FOREIGN KEY (nickname) REFERENCES "users" (nickname)
+);
+
+CREATE TABLE IF NOT EXISTS "allUsers" (
+  id SERIAL PRIMARY KEY,
+  nickname citext COLLATE "ucs_basic" NOT NULL UNIQUE,
+  fullname TEXT,
+  email CITEXT NOT NULL ,
+  about TEXT,
+  forum CITEXT REFERENCES "forums" (slug)
+--   CONSTRAINT uniqueNick UNIQUE (nickname)
 );
 
 
