@@ -99,8 +99,6 @@ public class PostDAO {
                     ps.addBatch();
                    // ++i;
 //                    setPathOfPost(parentPost, post);
-                        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?)  ON CONFLICT (forum, nickname) DO NOTHING ";
-                        jdbc.update(updateAllUsers, postAuthor.getAbout(), postAuthor.getFullname(), postAuthor.getEmail(), postAuthor.getNickname(), thread.getForum());
 
 
 
@@ -141,7 +139,13 @@ public class PostDAO {
     }
 
 
+    @Transactional
+    public void updateAllUsers(User postAuthor, String forum) {
+            String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?)  ON CONFLICT (nickname, forum) DO NOTHING ";
+            jdbc.update(updateAllUsers, postAuthor.getAbout(), postAuthor.getFullname(), postAuthor.getEmail(), postAuthor.getNickname(), forum);
 
+
+    }
     private void setPathOfPost(Post parent, Post body) {
         String sql = "UPDATE posts SET path = ? WHERE id = ?";
         jdbc.update(connection -> {

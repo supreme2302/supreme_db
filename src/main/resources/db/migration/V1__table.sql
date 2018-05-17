@@ -68,14 +68,31 @@ CREATE TABLE IF NOT EXISTS "allUsers" (
   fullname TEXT,
   email CITEXT NOT NULL ,
   about citext,
-  forum CITEXT REFERENCES "forums" (slug),
-  CONSTRAINT uniqueNick UNIQUE (forum, nickname)
+  forum CITEXT,
+  UNIQUE (nickname, forum)
 );
 
 
 drop index if EXISTS sortPostsTree;
-drop INDEX IF EXISTS usersIx;
+drop INDEX IF EXISTS allUsersIx;
 DROP INDEX IF EXISTS onT;
+DROP INDEX IF EXISTS forumSlugIx;
+DROP INDEX IF EXISTS allThreadsAx;
+DROP INDEX IF EXISTS votesIx;
+
+DROP INDEX IF EXISTS threadSlugIx;
+DROP INDEX if EXISTS flatIx;
 CREATE INDEX sortPostsTree ON posts(thread, path, id);
-CREATE INDEX usersIx on users(nickname);
+CREATE INDEX allUsersIx on "allUsers"(forum, nickname);
 CREATE INDEX onT on threads(forumid, created);
+CREATE INDEX forumSlugIx on forums(slug);
+CREATE INDEX allThreadsAx on threads(forumid, created);
+CREATE INDEX votesIx on votes(nickname, threadid);
+CREATE INDEX threadSlugIx on threads(slug);
+CREATE INDEX userIx on users(nickname);
+
+CREATE INDEX flatIx on posts(thread, created);
+
+
+
+

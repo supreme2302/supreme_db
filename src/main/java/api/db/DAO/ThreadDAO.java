@@ -49,7 +49,7 @@ public class ThreadDAO {
 //        jdbc.update(sql_for_forums, body.getForum(), body.getForum());
         User threadAuthor = userDAO.getProfileUser(body.getAuthor());
 
-            String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?) ON CONFLICT (forum, nickname) DO NOTHING ";
+            String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?) ON CONFLICT ( nickname, forum) DO NOTHING ";
             jdbc.update(updateAllUsers, threadAuthor.getAbout(), threadAuthor.getFullname(), threadAuthor.getEmail(), threadAuthor.getNickname(), body.getForum());
 
 

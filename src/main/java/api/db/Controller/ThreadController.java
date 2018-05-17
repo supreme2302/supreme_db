@@ -68,6 +68,13 @@ public class ThreadController {
         } catch (Exception error) {
             error.printStackTrace();
         }
+        for (Post post: posts) {
+            User postAuthor = userDAO.getProfileUser(post.getAuthor());
+            if (postAuthor == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find something"));
+            }
+            postDAO.updateAllUsers(postAuthor, thread.getForum());
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(posts);
 
