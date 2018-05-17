@@ -64,7 +64,7 @@ public class UserDAO {
         //TODO:Доделать
         desc = (desc != null) && desc;
         List<Object> insertionArr = new ArrayList<>();
-        String sql = "SELECT about, fullname, email, nickname COLLATE \"ucs_basic\" FROM \"allUsers\"";
+        String sql = "SELECT about, fullname, email, nickname  FROM \"allUsers\"";
         if (since == null) {
             sql += " WHERE forum = ? ORDER BY nickname ";
             insertionArr.add(forum.getSlug());
@@ -80,10 +80,10 @@ public class UserDAO {
             sql += " WHERE forum = ? ";
             insertionArr.add(forum.getSlug());
             if (desc) {
-                sql += " AND lower(nickname) < lower(?) COLLATE \"ucs_basic\" ORDER BY nickname DESC";
+                sql += " AND lower(nickname) < lower(?)  ORDER BY nickname DESC";
             }
             else {
-                sql += " AND lower(nickname) > lower(?) COLLATE \"ucs_basic\" ORDER BY nickname ";
+                sql += " AND lower(nickname) > lower(?)  ORDER BY nickname ";
 
             }
             insertionArr.add(since);

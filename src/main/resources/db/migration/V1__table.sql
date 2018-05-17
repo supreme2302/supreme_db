@@ -64,12 +64,12 @@ CREATE TABLE IF NOT EXISTS "votes" (
 
 CREATE TABLE IF NOT EXISTS "allUsers" (
   id SERIAL PRIMARY KEY,
-  nickname citext COLLATE "ucs_basic" NOT NULL UNIQUE,
+  nickname citext COLLATE "ucs_basic" NOT NULL,
   fullname TEXT,
   email CITEXT NOT NULL ,
-  about TEXT,
-  forum CITEXT REFERENCES "forums" (slug)
---   CONSTRAINT uniqueNick UNIQUE (nickname)
+  about citext,
+  forum CITEXT REFERENCES "forums" (slug),
+  CONSTRAINT uniqueNick UNIQUE (forum, nickname)
 );
 
 

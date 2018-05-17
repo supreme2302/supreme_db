@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -34,7 +35,6 @@ public class PostDAO {
     }
 
     private static PostMapper postMapper = new PostMapper();
-
     public Integer createPost (List<Post> posts, Thread thread, UserDAO userDAO, String created_date) throws SQLException {
         //try {
 //            connection = DriverManager.getConnection(
@@ -99,7 +99,7 @@ public class PostDAO {
                     ps.addBatch();
                    // ++i;
 //                    setPathOfPost(parentPost, post);
-                        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?)  ON CONFLICT (nickname) DO NOTHING ";
+                        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?)  ON CONFLICT (forum, nickname) DO NOTHING ";
                         jdbc.update(updateAllUsers, postAuthor.getAbout(), postAuthor.getFullname(), postAuthor.getEmail(), postAuthor.getNickname(), thread.getForum());
 
 
