@@ -83,7 +83,7 @@ DROP INDEX IF EXISTS votesIx;
 DROP INDEX IF EXISTS threadSlugIx;
 DROP INDEX if EXISTS flatIx;
 CREATE INDEX sortPostsTree ON posts(thread, path, id);
-CREATE INDEX allUsersIx on "allUsers"(forum, nickname);
+-- CREATE INDEX allUsersIx on "allUsers"(forum, nickname);
 CREATE INDEX onT on threads(forumid, created);
 CREATE INDEX forumSlugIx on forums(slug);
 CREATE INDEX allThreadsAx on threads(forumid, created);
