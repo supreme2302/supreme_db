@@ -8,6 +8,7 @@ import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -64,30 +65,16 @@ public class PostDAO {
                         return 404;
                     }
 
-                    final Long idss = jdbc.queryForObject("select nextval('posts_id_seq')",
-                            Long.class);
-
-                    //todo придумать как не вызывать запрос два раза
                     Post parentPost = getPostById(post.getParent());
                     postsArr.add(parentPost);
                     if (parentPost == null && post.getParent() != 0 ||
                             (parentPost != null && !parentPost.getThread().equals(post.getThread()))) {
                         return 409;
                     }
-                    post.setId(idss);
-                    //System.out.println(post.getId());
-
-                    //todo вынести в отдельную функцию
-                    ArrayList obj;
-                    if (post.getParent() == 0) {
-                        ArrayList arr = new ArrayList<>(Arrays.asList(idss));
-                        obj = arr;
-                    }
-                    else {
-                        ArrayList arr = new ArrayList<>(Arrays.asList(parentPost.getPath()));
-                        arr.add(idss);
-                        obj = arr;
-                    }
+                    final Long idNextEntry = jdbc.queryForObject("select nextval('posts_id_seq')",
+                            Long.class);
+                    post.setId(idNextEntry);
+                    ArrayList insertionObj = setIdNextEntry(post, parentPost, idNextEntry);
                     ps.setString(1, post.getAuthor());
                     ps.setString(2, post.getMessage());
                     ps.setLong(3, post.getParent());
@@ -95,14 +82,10 @@ public class PostDAO {
                     ps.setLong(5, thread.getId());
                     ps.setString(6, thread.getForum());
                     ps.setLong(7, post.getId());
-                    ps.setArray(8, connection.createArrayOf("int", obj.toArray()));
+                    ps.setArray(8, connection.createArrayOf("int", insertionObj.toArray()));
                     ps.addBatch();
                    // ++i;
 //                    setPathOfPost(parentPost, post);
-
-
-
-
                 }
                 ps.executeBatch();
                 connection.close();
@@ -138,35 +121,36 @@ public class PostDAO {
         return 201;
     }
 
-
-    @Transactional
-    public void updateAllUsers(User postAuthor, String forum) {
-            String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?)  ON CONFLICT (nickname, forum) DO NOTHING ";
-            jdbc.update(updateAllUsers, postAuthor.getAbout(), postAuthor.getFullname(), postAuthor.getEmail(), postAuthor.getNickname(), forum);
-
-
+    private ArrayList setIdNextEntry(Post post, Post parentPost, Long id) {
+        if (post.getParent() == 0) {
+            ArrayList getPath = new ArrayList<>(Arrays.asList(id));
+            return getPath;
+        }
+        else {
+            ArrayList getPath = new ArrayList<>(Arrays.asList(parentPost.getPath()));
+            getPath.add(id);
+            return getPath;
+        }
     }
-    private void setPathOfPost(Post parent, Post body) {
-        String sql = "UPDATE posts SET path = ? WHERE id = ?";
-        jdbc.update(connection -> {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            if (body.getParent() == 0) {
-                Array arrayPath = connection.createArrayOf("int",
-                        new Object[]{body.getId()});
-                preparedStatement.setArray(1, arrayPath);
-                preparedStatement.setLong(2, body.getId());
-            }
-            else {
-                ArrayList innerArr = new ArrayList<>(Arrays.asList(parent.getPath()));
-                innerArr.add(body.getId());
-                Array innerArrPath = connection.createArrayOf("int",
-                        innerArr.toArray());
-                preparedStatement.setArray(1, innerArrPath);
-                preparedStatement.setLong(2, body.getId());
-            }
-            return preparedStatement;
-        });
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void updateAllUsers(List<User> users, String forum, UserDAO userDAO) {
+        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?)  ON CONFLICT (nickname, forum) DO NOTHING ";
+        jdbc.batchUpdate(updateAllUsers, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                preparedStatement.setString(1, users.get(i).getAbout());
+                preparedStatement.setString(2, users.get(i).getFullname());
+                preparedStatement.setString(3, users.get(i).getEmail());
+                preparedStatement.setString(4, users.get(i).getNickname());
+                preparedStatement.setString(5, forum);
+            }
+
+            @Override
+            public int getBatchSize() {
+                return users.size();
+            }
+        });
     }
 
     public Post getPostById (Long id) {

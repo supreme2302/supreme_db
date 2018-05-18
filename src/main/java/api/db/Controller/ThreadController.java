@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -55,6 +56,14 @@ public class ThreadController {
         if (thread == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cannot find thread"));
         }
+        List<User> userList = new ArrayList<>();
+        for (Post post: posts) {
+            User temp = userDAO.getProfileUser(post.getAuthor());
+            if (temp != null) {
+                userList.add(temp);
+            }
+        }
+        postDAO.updateAllUsers(userList, thread.getForum(), userDAO);
 
         try {
             Integer res = postDAO.createPost(posts, thread, userDAO,
@@ -68,14 +77,14 @@ public class ThreadController {
         } catch (Exception error) {
             error.printStackTrace();
         }
-        for (Post post: posts) {
-            User postAuthor = userDAO.getProfileUser(post.getAuthor());
-            if (postAuthor == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find something"));
-            }
-            postDAO.updateAllUsers(postAuthor, thread.getForum());
-        }
-
+//        for (Post post: posts) {
+//            ++count;
+//            User postAuthor = userDAO.getProfileUser(post.getAuthor());
+//            if (postAuthor == null) {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find something"));
+//            }
+//            postDAO.updateAllUsers(postAuthor, thread.getForum());
+//        }
         return ResponseEntity.status(HttpStatus.CREATED).body(posts);
 
     }
