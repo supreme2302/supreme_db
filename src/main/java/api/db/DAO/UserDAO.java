@@ -66,8 +66,8 @@ public class UserDAO {
         List<Object> insertionArr = new ArrayList<>();
         String sql = "SELECT about, fullname, email, nickname  FROM \"allUsers\"";
         if (since == null) {
-            sql += " WHERE forum = ? ORDER BY nickname ";
-            insertionArr.add(forum.getSlug());
+            sql += " WHERE forumid = ? ORDER BY nickname ";
+            insertionArr.add(forum.getId());
             if (desc) {
                 sql += " DESC ";
             }
@@ -77,8 +77,8 @@ public class UserDAO {
             }
         }
         else {
-            sql += " WHERE forum = ? ";
-            insertionArr.add(forum.getSlug());
+            sql += " WHERE forumid = ? ";
+            insertionArr.add(forum.getId());
             if (desc) {
                 sql += " AND lower(nickname) < lower(?)  ORDER BY nickname DESC";
             }

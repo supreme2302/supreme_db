@@ -38,7 +38,7 @@ public class PostDAO {
     private static PostMapper postMapper = new PostMapper();
     public Integer createPost (List<Post> posts, Thread thread, UserDAO userDAO, String created_date) throws SQLException {
         //try {
-//            connection = DriverManager.getConnection(
+//            Connection connection = DriverManager.getConnection(
 //                    "jdbc:postgresql://localhost:5432/docker",
 //                    "docker",
 //                    "docker"
@@ -134,9 +134,9 @@ public class PostDAO {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void updateAllUsers(List<User> users, String forum, UserDAO userDAO) {
-//        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?)  ON CONFLICT (nickname, forum) DO NOTHING ";
-        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?) ";
+    public void updateAllUsers(List<User> users, int forumid, UserDAO userDAO) {
+        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forumid) VALUES (?,?,?,?,?)  ON CONFLICT (nickname, forumid) DO NOTHING ";
+//        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forumid) VALUES (?,?,?,?,?) ";
         try {
             jdbc.batchUpdate(updateAllUsers, new BatchPreparedStatementSetter() {
                 @Override
@@ -145,7 +145,7 @@ public class PostDAO {
                     preparedStatement.setString(2, users.get(i).getFullname());
                     preparedStatement.setString(3, users.get(i).getEmail());
                     preparedStatement.setString(4, users.get(i).getNickname());
-                    preparedStatement.setString(5, forum);
+                    preparedStatement.setInt(5, forumid);
                 }
 
                 @Override
@@ -153,7 +153,9 @@ public class PostDAO {
                     return users.size();
                 }
             });
-        } catch (DuplicateKeyException ignored) {}
+        } catch (DataAccessException error) {
+            System.out.println("pooooooooooooost");
+        }
     }
 
     public Post getPostById (Long id) {
@@ -256,7 +258,7 @@ public class PostDAO {
             if (desc) {
                 if (limit != null) {
                     sql += " (SELECT id FROM posts WHERE parent = 0 AND thread = ? " +
-                            " ORDER BY path desc LIMIT ? ) AS selected ON (selected.id = path[1] AND thread = ?) ORDER BY path[1] DESC, path";
+                            " ORDER BY path desc LIMIT ? ) AS opted ON (opted.id = path[1] AND thread = ?) ORDER BY path[1] DESC, path";
                     insertionArr.add(thread.getId());
                     insertionArr.add(limit);
                     insertionArr.add(thread.getId());
@@ -265,7 +267,7 @@ public class PostDAO {
             else {
                 if (limit != null) {
                     sql += " (SELECT id FROM posts WHERE parent = 0 AND thread = ? " +
-                            " ORDER BY id LIMIT ? ) AS selected ON (thread = ? AND selected.id = path[1]) ORDER BY path";
+                            " ORDER BY id LIMIT ? ) AS opted ON (thread = ? AND opted.id = path[1]) ORDER BY path";
                     insertionArr.add(thread.getId());
                     insertionArr.add(limit);
                     insertionArr.add(thread.getId());
@@ -278,7 +280,7 @@ public class PostDAO {
                     sql += "  (SELECT id FROM posts WHERE parent = 0 AND thread = ?" +
                             "AND path[1] < (SELECT path[1] FROM posts WHERE id = ?)" +
                             "ORDER BY path DESC, thread DESC LIMIT ?)" +
-                            "AS selected ON (thread = ? AND selected.id = path[1])" +
+                            "AS opted ON (thread = ? AND opted.id = path[1])" +
                             "ORDER BY path[1] DESC, path";
                     insertionArr.add(thread.getId());
                     insertionArr.add(since);
@@ -290,7 +292,7 @@ public class PostDAO {
                 if (limit != null) {
                     sql += "  (SELECT id FROM posts WHERE parent = 0 AND thread = ?" +
                             "AND path > (SELECT path FROM posts WHERE id = ?) ORDER BY id LIMIT ?)" +
-                            "AS selected ON (thread = ? AND selected.id = path[1]) ORDER BY path";
+                            "AS opted ON (thread = ? AND opted.id = path[1]) ORDER BY path";
                     insertionArr.add(thread.getId());
                     insertionArr.add(since);
                     insertionArr.add(limit);

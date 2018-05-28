@@ -34,13 +34,21 @@ public class ThreadController {
         this.postDAO = postDAO;
     }
 
-    //TODO:: возможно переделать на один метод из DAO
-    public Thread GetThreadBySlugOrId(String slug_or_id) {
-        if (slug_or_id.matches("\\d+")) {
+//    public Thread GetThreadBySlugOrId(String slug_or_id) {
+//        if (slug_or_id.matches("\\d+")) {
+//            Integer id = Integer.parseInt(slug_or_id);
+//            return threadDAO.getThreadById(id);
+//        }
+//        else {
+//            return threadDAO.getThreadBySlug(slug_or_id);
+//        }
+//    }
+    private Thread GetThreadBySlugOrId (String slug_or_id) {
+        try {
             Integer id = Integer.parseInt(slug_or_id);
             return threadDAO.getThreadById(id);
         }
-        else {
+        catch (Exception error){
             return threadDAO.getThreadBySlug(slug_or_id);
         }
     }
@@ -63,7 +71,7 @@ public class ThreadController {
                 userList.add(temp);
             }
         }
-        postDAO.updateAllUsers(userList, thread.getForum(), userDAO);
+        postDAO.updateAllUsers(userList, thread.getForumid(), userDAO);
 
         try {
             Integer res = postDAO.createPost(posts, thread, userDAO,

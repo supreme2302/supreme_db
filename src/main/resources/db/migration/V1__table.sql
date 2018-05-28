@@ -63,18 +63,20 @@ CREATE TABLE IF NOT EXISTS "votes" (
 );
 
 CREATE TABLE IF NOT EXISTS "allUsers" (
---   id SERIAL PRIMARY KEY,
   nickname citext COLLATE "ucs_basic" NOT NULL,
   fullname TEXT,
   email CITEXT NOT NULL ,
   about citext,
-  forum CITEXT
---   UNIQUE (nickname, forum)
+  forumid INTEGER
 );
 
 
-drop index if EXISTS sortPostsTree;
 drop INDEX IF EXISTS allUsersIx;
+CREATE UNIQUE INDEX allUsersIx on "allUsers"(forumid, nickname);
+CLUSTER "allUsers" USING allUsersIx;
+
+
+drop index if EXISTS sortPostsTree;
 DROP INDEX IF EXISTS onT;
 DROP INDEX IF EXISTS forumSlugIx;
 DROP INDEX IF EXISTS allThreadsAx;
@@ -90,9 +92,8 @@ DROP INDEX if EXISTS pathIx;
 DROP INDEX if EXISTS pathFirstIx;
 
 CREATE INDEX sortPostsTree ON posts(thread, path, id);
-CREATE UNIQUE INDEX allUsersIx on "allUsers"(forum, nickname);
 CREATE INDEX onT on threads(forumid, created);
-CREATE UNIQUE INDEX forumSlugIx on forums(slug);
+CREATE INDEX forumSlugIx on forums(slug);
 CREATE INDEX allThreadsAx on threads(forumid, created);
 CREATE INDEX votesIx on votes(nickname, threadid);
 CREATE UNIQUE INDEX threadSlugIx on threads(slug);
@@ -105,9 +106,8 @@ CREATE INDEX flatIx on posts(thread, created);
 -- CREATE INDEX pathIx on posts(path);
 -- CREATE INDEX pathFirstIx on posts((path[1]));
 
-CLUSTER "allUsers" USING allUsersIx;
-CLUSTER threads USING  threadSlugIx;
-CLUSTER forums USING forumSlugIx;
+
+-- CLUSTER threads USING  threadSlugIx;
 
 -- drop INDEX p;
 -- CREATE INDEX p on posts(thread, (path[1]));

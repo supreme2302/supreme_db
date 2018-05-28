@@ -6,6 +6,7 @@ import api.db.Models.Thread;
 import api.db.Models.User;
 import api.db.Models.Vote;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -49,11 +50,13 @@ public class ThreadDAO {
 //        jdbc.update(sql_for_forums, body.getForum(), body.getForum());
         User threadAuthor = userDAO.getProfileUser(body.getAuthor());
 
-//            String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?) ON CONFLICT ( nickname, forum) DO NOTHING ";
-        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?) ";
+            String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forumid) VALUES (?,?,?,?,?) ON CONFLICT ( nickname, forumid) DO NOTHING ";
+//        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forumid) VALUES (?,?,?,?,?) ";
         try {
-            jdbc.update(updateAllUsers, threadAuthor.getAbout(), threadAuthor.getFullname(), threadAuthor.getEmail(), threadAuthor.getNickname(), body.getForum());
-        } catch (DuplicateKeyException ignored) {}
+            jdbc.update(updateAllUsers, threadAuthor.getAbout(), threadAuthor.getFullname(), threadAuthor.getEmail(), threadAuthor.getNickname(), body.getForumid());
+        } catch (DataAccessException error) {
+            System.out.println("threadddddddddddd");
+        }
 
 
 
