@@ -135,22 +135,25 @@ public class PostDAO {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void updateAllUsers(List<User> users, String forum, UserDAO userDAO) {
-        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?)  ON CONFLICT (nickname, forum) DO NOTHING ";
-        jdbc.batchUpdate(updateAllUsers, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
-                preparedStatement.setString(1, users.get(i).getAbout());
-                preparedStatement.setString(2, users.get(i).getFullname());
-                preparedStatement.setString(3, users.get(i).getEmail());
-                preparedStatement.setString(4, users.get(i).getNickname());
-                preparedStatement.setString(5, forum);
-            }
+//        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?)  ON CONFLICT (nickname, forum) DO NOTHING ";
+        String updateAllUsers = "INSERT INTO \"allUsers\"(about, fullname, email, nickname, forum) VALUES (?,?,?,?,?) ";
+        try {
+            jdbc.batchUpdate(updateAllUsers, new BatchPreparedStatementSetter() {
+                @Override
+                public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                    preparedStatement.setString(1, users.get(i).getAbout());
+                    preparedStatement.setString(2, users.get(i).getFullname());
+                    preparedStatement.setString(3, users.get(i).getEmail());
+                    preparedStatement.setString(4, users.get(i).getNickname());
+                    preparedStatement.setString(5, forum);
+                }
 
-            @Override
-            public int getBatchSize() {
-                return users.size();
-            }
-        });
+                @Override
+                public int getBatchSize() {
+                    return users.size();
+                }
+            });
+        } catch (DuplicateKeyException ignored) {}
     }
 
     public Post getPostById (Long id) {
