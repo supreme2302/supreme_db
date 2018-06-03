@@ -116,10 +116,10 @@ CREATE TABLE IF NOT EXISTS "allUsers" (
 
 drop INDEX IF EXISTS allUsersIx;
 CREATE UNIQUE INDEX allUsersIx on "allUsers"(forumid, nickname);
--- DROP INDEX IF EXISTS uniqueForum;
--- CREATE INDEX uniqueForum on "allUsers"(forumid);
-CLUSTER "allUsers" USING allUsersIx;
--- CLUSTER "allUsers" USING uniqueForum;
+DROP INDEX IF EXISTS uniqueForum;
+CREATE INDEX uniqueForum on "allUsers"(forumid);
+-- CLUSTER "allUsers" USING allUsersIx;
+CLUSTER "allUsers" USING uniqueForum;
 DROP INDEX IF EXISTS lowAllUsersNickIx;
 CREATE INDEX lowAllUsersNickIx on "allUsers"(lower(nickname));
 
