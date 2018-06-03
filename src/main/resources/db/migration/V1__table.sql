@@ -65,7 +65,7 @@ CREATE UNIQUE INDEX slugThreadIx on threads(slug);
 DROP INDEX IF EXISTS lowSlugThreadIx;
 CREATE INDEX lowSlugThreadIx on threads(lower(slug));
 
-DROP INDEX lowSlugThreadIx;
+DROP INDEX IF EXISTS lowSlugThreadIx;
 CREATE INDEX onT on threads(forumid, created);
 
 
@@ -116,12 +116,16 @@ CREATE TABLE IF NOT EXISTS "allUsers" (
 
 drop INDEX IF EXISTS allUsersIx;
 CREATE UNIQUE INDEX allUsersIx on "allUsers"(forumid, nickname);
-CLUSTER "allUsers" USING allUsersIx;
+DROP INDEX IF EXISTS uniqueForum;
+CREATE INDEX uniqueForum on "allUsers"(forumid);
+-- CLUSTER "allUsers" USING allUsersIx;
+CLUSTER "allUsers" USING uniqueForum;
 DROP INDEX IF EXISTS lowAllUsersNickIx;
 CREATE INDEX lowAllUsersNickIx on "allUsers"(lower(nickname));
 
 DROP INDEX IF EXISTS usualAllusersIx;
 CREATE INDEX usualAllusersIx on "allUsers"(forumid, lower(nickname));
+
 
 
 

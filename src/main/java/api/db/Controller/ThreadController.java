@@ -70,29 +70,23 @@ public class ThreadController {
             if (temp != null) {
                 userList.add(temp);
             }
-        }
-        postDAO.updateAllUsers(userList, thread.getForumid(), userDAO);
-
-        try {
-            Integer res = postDAO.createPost(posts, thread, userDAO,
-                    new Timestamp(System.currentTimeMillis()).toInstant().toString());
-            if (res == 409) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("Conflict"));
-            }
-            else if (res == 404) {
+            else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find something"));
             }
-        } catch (Exception error) {
-            error.printStackTrace();
+
+            post.setForum(thread.getForum());
+            post.setThread((long) thread.getId());
+            Post parentPost = postDAO.getPostById(post.getParent());
+            if (parentPost == null && post.getParent() != 0 ||
+                    (parentPost != null && !parentPost.getThread().equals(post.getThread()))) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("Conflict"));
+            }
+
         }
-//        for (Post post: posts) {
-//            ++count;
-//            User postAuthor = userDAO.getProfileUser(post.getAuthor());
-//            if (postAuthor == null) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cannot find something"));
-//            }
-//            postDAO.updateAllUsers(postAuthor, thread.getForum());
-//        }
+        postDAO.updateAllUsers(userList, thread.getForumid(), userDAO);
+        postDAO.createPost(posts, thread,
+                new Timestamp(System.currentTimeMillis()).toInstant().toString());
+
         return ResponseEntity.status(HttpStatus.CREATED).body(posts);
 
     }
