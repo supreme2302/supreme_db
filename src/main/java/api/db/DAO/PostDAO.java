@@ -241,7 +241,7 @@ public class PostDAO {
         }
 
         //возможно не нужна
-        sql += ", created::timestamptz, id";
+//        sql += ", created::timestamptz, id";
         if (limit != null) {
             sql += " LIMIT (?)";
             insertionArr.add(limit);

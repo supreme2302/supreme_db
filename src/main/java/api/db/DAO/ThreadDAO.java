@@ -149,7 +149,7 @@ public class ThreadDAO {
 
 
     public Vote getVoteByNick(String nickname, Integer threadId) {
-        String sql = "SELECT * FROM votes WHERE lower(nickname) = lower(?) AND threadid = (?)";
+        String sql = "SELECT * FROM votes WHERE threadid = (?) AND lower(nickname) = lower(?)";
         try {
             return jdbc.queryForObject(sql, new RowMapper<Vote>() {
                 @Override
@@ -159,7 +159,7 @@ public class ThreadDAO {
                             resultSet.getInt("voice"),
                             resultSet.getInt("threadid"));
                 }
-            }, nickname, threadId);
+            }, threadId, nickname);
         }
         catch (EmptyResultDataAccessException error) {
             return null;
