@@ -87,15 +87,9 @@ CREATE TABLE IF NOT EXISTS "posts" (
 DROP INDEX IF EXISTS flatTwoIx;
 CREATE INDEX flatTwoIx on posts(thread, created, id);
 -- --
-DROP INDEX IF EXISTS flatTwoIxDesc;
-CREATE INDEX flatTwoIxDesc on posts(thread, created DESC, id DESC);
--- --
 drop index if EXISTS sortPostsTree;
 CREATE INDEX sortPostsTree ON posts(thread, path, id);
 -- --
-
-drop index if EXISTS sortPostsTreeDesc;
-CREATE INDEX sortPostsTreeDesc ON posts(thread, path DESC, id DESC);
 
 -- --
 
@@ -113,10 +107,6 @@ DROP INDEX IF EXISTS SimplePostIx;
 CREATE INDEX SimplePostIx on posts(thread, parent, id);
 
 -- --
-DROP INDEX IF EXISTS clusterPostsIx;
-CREATE INDEX clusterPostsIx on posts(thread);
-CLUSTER posts USING  clusterPostsIx;
-
 
 
 CREATE TABLE IF NOT EXISTS "votes" (
@@ -153,3 +143,7 @@ CREATE INDEX usualAllusersIx on "allUsers"(forumid, lower(nickname));
 
 -- SELECT * from pg_stat_statements;
 -- SELECT pg_stat_statements_reset();
+
+
+
+
