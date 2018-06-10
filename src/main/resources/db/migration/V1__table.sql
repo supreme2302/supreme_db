@@ -48,7 +48,7 @@ CREATE INDEX lowSlugForumIx on forums(lower(slug));
 
 
 CREATE TABLE IF NOT EXISTS "threads" (
-  id SERIAL NOT NULL PRIMARY KEY,
+  id BIGSERIAL NOT NULL PRIMARY KEY,
   author citext COLLATE "ucs_basic" NOT NULL,
   created TIMESTAMP WITH TIME ZONE,
   forum citext,
@@ -113,14 +113,14 @@ DROP INDEX IF EXISTS SimplePostIx;
 CREATE INDEX SimplePostIx on posts(thread, parent, id);
 
 -- --
-
 DROP INDEX IF EXISTS clusterPostsIx;
 CREATE INDEX clusterPostsIx on posts(thread);
 CLUSTER posts USING  clusterPostsIx;
 
 
+
 CREATE TABLE IF NOT EXISTS "votes" (
-  id SERIAL PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   nickname citext NOT NULL ,
   voice INTEGER NOT NULL,
   threadid INTEGER REFERENCES "threads" (id),
