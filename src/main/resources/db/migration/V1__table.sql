@@ -1,4 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS CITEXT;
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+
 
 DROP TABLE IF EXISTS "allUsers" CASCADE;
 DROP TABLE if EXISTS posts CASCADE;
@@ -61,10 +63,11 @@ CREATE TABLE IF NOT EXISTS "threads" (
 
 DROP INDEX IF EXISTS slugThreadIx;
 CREATE UNIQUE INDEX slugThreadIx on threads(slug);
+CLUSTER threads USING slugThreadIx;
 
 DROP INDEX IF EXISTS lowSlugThreadIx;
 CREATE INDEX lowSlugThreadIx on threads(lower(slug));
-
+-- --
 DROP INDEX IF EXISTS lowSlugThreadIx;
 CREATE INDEX onT on threads(forumid, created);
 
@@ -83,15 +86,37 @@ CREATE TABLE IF NOT EXISTS "posts" (
 
 DROP INDEX IF EXISTS flatTwoIx;
 CREATE INDEX flatTwoIx on posts(thread, created, id);
-
+-- --
+DROP INDEX IF EXISTS flatTwoIxDesc;
+CREATE INDEX flatTwoIxDesc on posts(thread, created DESC, id DESC);
+-- --
 drop index if EXISTS sortPostsTree;
 CREATE INDEX sortPostsTree ON posts(thread, path, id);
+-- --
 
-DROP INDEX IF EXISTS comlicatedParentIx;
-CREATE INDEX comlicatedParentIx on posts(thread, parent, (path[1]), path);
+drop index if EXISTS sortPostsTreeDesc;
+CREATE INDEX sortPostsTreeDesc ON posts(thread, path DESC, id DESC);
 
-DROP INDEX IF EXISTS parentIx;
-CREATE INDEX parentIx on posts(thread, parent, path, (path[1]));
+-- --
+
+drop INDEX IF EXISTS halfPostIx;
+CREATE INDEX halfPostIx on posts(thread, parent, path, id);
+
+-- --
+
+drop INDEX IF EXISTS fullPostIx;
+CREATE INDEX fullPostIx on posts((path[1]), thread, path);
+
+-- --
+
+DROP INDEX IF EXISTS SimplePostIx;
+CREATE INDEX SimplePostIx on posts(thread, parent, id);
+
+-- --
+
+DROP INDEX IF EXISTS clusterPostsIx;
+CREATE INDEX clusterPostsIx on posts(thread);
+CLUSTER posts USING  clusterPostsIx;
 
 
 CREATE TABLE IF NOT EXISTS "votes" (
@@ -118,18 +143,13 @@ drop INDEX IF EXISTS allUsersIx;
 CREATE UNIQUE INDEX allUsersIx on "allUsers"(forumid, nickname);
 DROP INDEX IF EXISTS uniqueForum;
 CREATE INDEX uniqueForum on "allUsers"(forumid);
--- CLUSTER "allUsers" USING allUsersIx;
 CLUSTER "allUsers" USING uniqueForum;
 DROP INDEX IF EXISTS lowAllUsersNickIx;
 CREATE INDEX lowAllUsersNickIx on "allUsers"(lower(nickname));
-
+-- --
 DROP INDEX IF EXISTS usualAllusersIx;
 CREATE INDEX usualAllusersIx on "allUsers"(forumid, lower(nickname));
 
 
-
-
-
-
-
-
+-- SELECT * from pg_stat_statements;
+-- SELECT pg_stat_statements_reset();
