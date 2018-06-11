@@ -1,5 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS CITEXT;
-CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+-- CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
 
 DROP TABLE IF EXISTS "allUsers" CASCADE;
@@ -94,7 +94,7 @@ CREATE INDEX sortPostsTree ON posts(thread, path, id);
 -- --
 
 drop INDEX IF EXISTS halfPostIx;
-CREATE INDEX halfPostIx on posts(thread, parent, path, id);
+CREATE INDEX halfPostIx on posts(parent, thread, path, id);
 
 -- --
 
@@ -104,7 +104,7 @@ CREATE INDEX fullPostIx on posts((path[1]), thread, path);
 -- --
 
 DROP INDEX IF EXISTS SimplePostIx;
-CREATE INDEX SimplePostIx on posts(thread, parent, id);
+CREATE INDEX SimplePostIx on posts(parent, thread, id);
 
 -- --
 
@@ -143,7 +143,6 @@ CREATE INDEX usualAllusersIx on "allUsers"(forumid, lower(nickname));
 
 -- SELECT * from pg_stat_statements;
 -- SELECT pg_stat_statements_reset();
-
 
 
 
