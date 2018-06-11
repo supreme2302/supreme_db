@@ -94,7 +94,7 @@ CREATE INDEX sortPostsTree ON posts(thread, path, id);
 -- --
 
 drop INDEX IF EXISTS halfPostIx;
-CREATE INDEX halfPostIx on posts(parent, thread, path, id);
+CREATE INDEX halfPostIx on posts(thread, parent, path, id);
 
 -- --
 
@@ -104,7 +104,7 @@ CREATE INDEX fullPostIx on posts((path[1]), thread, path);
 -- --
 
 DROP INDEX IF EXISTS SimplePostIx;
-CREATE INDEX SimplePostIx on posts(parent, thread, id);
+CREATE INDEX SimplePostIx on posts(thread, parent, id);
 
 -- --
 
